@@ -1,5 +1,5 @@
 {
-  "format": "public-export/2",
+  "format": "public-export/3",
   "notes": [
     {
       "date": "2026-09-01",
@@ -9,6 +9,25 @@
       "title": "DaT Parkinson's Challenge (DrivenData): 3D DaT-SPECT normal vs abnormal",
       "type": "competition",
       "writeup": "writeups/drivendata-dat-parkinsons-challenge.md"
+    },
+    {
+      "date": "2025-03-18",
+      "id": "insee-public-private-pay-2025",
+      "path": "publications/insee-public-private-pay-2025.md",
+      "publication": {
+        "authors": [
+          "Fanny Godet",
+          "Tung Anh Tran"
+        ],
+        "issue": "2043",
+        "language": "fr",
+        "publisher": "Insee",
+        "title_en": "For the same annual volume of work, average net pay in the civil service is 3.7% below the private sector",
+        "venue": "Insee Première"
+      },
+      "title": "À volume annuel de travail égal, le salaire net moyen de la fonction publique est inférieur de 3,7 % à celui du secteur privé",
+      "type": "publication",
+      "url": "https://www.insee.fr/fr/statistiques/8386049"
     }
   ]
 }
