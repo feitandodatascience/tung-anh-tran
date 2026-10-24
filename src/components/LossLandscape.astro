@@ -1,0 +1,344 @@
+---
+// The hero's loss landscape, drawn as an engraved atlas plate: a slowly turning wire mesh
+// over a framed floor that maps the same surface as contour lines. Two descents leave one
+// edge together, gradient descent with momentum in gilt and plain gradient descent in pearl,
+// each casting a shadow path on the floor. A new race starts every eleven seconds, or on a
+// click. Reduced motion gets one finished race, still. Drawing pauses while out of view.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['loss-landscape', className]} aria-hidden="true">
+  <canvas data-loss-landscape></canvas>
+</div>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-loss-landscape]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const TAU = Math.PI * 2;
+    const GRID = 56;
+    const LEVELS = 14;
+    const RACE = 11000;
+    const STEP = 30; // ms per optimiser step
+    const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const easeOut = (p: number) => 1 - Math.pow(1 - p, 3);
+
+    // The surface: a bowl with a few wells and hills, so the descents have choices to make.
+    const WELLS = [
+      [0.35, 0.2, -1.1, 0.32],
+      [-0.45, -0.35, -0.6, 0.25],
+      [-0.3, 0.5, 0.55, 0.28],
+      [0.55, -0.5, 0.4, 0.22],
+      [-0.6, 0.1, -0.3, 0.14],
+    ];
+    const f = (x: number, y: number) => {
+      let v = 0.45 * (x * x + y * y);
+      for (const [cx, cy, a, w] of WELLS) v += a * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (2 * w * w));
+      return v;
+    };
+
+    // Heights on the grid, and the floor's contour segments in surface coordinates.
+    type Pt = [number, number];
+    const H = Array.from({ length: GRID + 1 }, (_, j) =>
+      Array.from({ length: GRID + 1 }, (_, i) => f(-1 + (2 * i) / GRID, -1 + (2 * j) / GRID)),
+    );
+    let lo = Infinity;
+    let hi = -Infinity;
+    H.forEach((row) => row.forEach((v) => { lo = Math.min(lo, v); hi = Math.max(hi, v); }));
+    const FLOOR = lo - 0.3; // the floor sits just under the surface's lowest point
+    const contours: [Pt, Pt][] = [];
+    const cell = 2 / GRID;
+    for (let l = 1; l <= LEVELS; l++) {
+      const lv = lo + ((hi - lo) * l) / (LEVELS + 1);
+      for (let j = 0; j < GRID; j++) {
+        for (let i = 0; i < GRID; i++) {
+          const a = H[j][i];
+          const b = H[j][i + 1];
+          const c = H[j + 1][i + 1];
+          const d = H[j + 1][i];
+          const idx = (a > lv ? 8 : 0) | (b > lv ? 4 : 0) | (c > lv ? 2 : 0) | (d > lv ? 1 : 0);
+          if (idx === 0 || idx === 15) continue;
+          const u = -1 + i * cell;
+          const v = -1 + j * cell;
+          const T: Pt = [u + (cell * (lv - a)) / (b - a), v];
+          const R: Pt = [u + cell, v + (cell * (lv - b)) / (c - b)];
+          const B: Pt = [u + (cell * (lv - d)) / (c - d), v + cell];
+          const L: Pt = [u, v + (cell * (lv - a)) / (d - a)];
+          if (idx === 5) contours.push([T, R], [L, B]);
+          else if (idx === 10) contours.push([L, T], [B, R]);
+          else {
+            const pair: Record<number, [Pt, Pt]> = {
+              1: [L, B], 14: [L, B], 2: [B, R], 13: [B, R], 3: [L, R], 12: [L, R],
+              4: [T, R], 11: [T, R], 6: [T, B], 9: [T, B], 7: [L, T], 8: [L, T],
+            };
+            contours.push(pair[idx]);
+          }
+        }
+      }
+    }
+
+    // Two optimisers from one start on the rim: with momentum (gilt) and without (pearl).
+    type Run = { beta: number; lr: number; x: number; y: number; vx: number; vy: number; path: Pt[] };
+    let runs: Run[] = [];
+    let raceStart = 0;
+    let stepped = 0;
+    const newRace = (now: number) => {
+      const a = Math.random() * TAU;
+      const x = 0.82 * Math.cos(a);
+      const y = 0.82 * Math.sin(a);
+      runs = [
+        { beta: 0.9, lr: 0.006, x, y, vx: 0, vy: 0, path: [[x, y]] },
+        { beta: 0, lr: 0.02, x, y, vx: 0, vy: 0, path: [[x, y]] },
+      ];
+      raceStart = now;
+      stepped = now;
+    };
+    const step = (run: Run) => {
+      const e = 1e-3;
+      const gx = (f(run.x + e, run.y) - f(run.x - e, run.y)) / (2 * e);
+      const gy = (f(run.x, run.y + e) - f(run.x, run.y - e)) / (2 * e);
+      run.vx = run.beta * run.vx - run.lr * gx;
+      run.vy = run.beta * run.vy - run.lr * gy;
+      run.x = clamp(run.x + run.vx, -1, 1);
+      run.y = clamp(run.y + run.vy, -1, 1);
+      run.path.push([run.x, run.y]);
+    };
+
+    const colours = { line: '', muted: '', glint: '' };
+    const readColours = () => {
+      const css = getComputedStyle(canvas);
+      colours.line = css.getPropertyValue('--on-deep').trim();
+      colours.muted = css.getPropertyValue('--on-deep-muted').trim();
+      colours.glint = css.getPropertyValue('--glint').trim();
+    };
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    const resize = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    };
+
+    const draw = (now: number, since: number) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      if (!w || !h) return;
+      const intro = still ? 1 : easeOut(clamp(since / 1600));
+      const th = still ? 0.6 : 0.6 + (now / 1000) * 0.045;
+      const tilt = 0.95;
+      const cx = w * (w < 460 ? 0.5 : 0.62);
+      const cy = h * 0.5;
+      const sc = Math.min(w * 0.27, h * 0.25);
+      const project = (x: number, y: number, z: number): [number, number, number] => {
+        const xr = x * Math.cos(th) - y * Math.sin(th);
+        const yr = x * Math.sin(th) + y * Math.cos(th);
+        const yy = yr * Math.cos(tilt) - z * 0.55 * Math.sin(tilt);
+        const depth = yr * Math.sin(tilt) + z * Math.cos(tilt);
+        return [cx + xr * sc, cy + yy * sc * 0.8 - z * sc * 0.32, depth];
+      };
+      const polyline = (pts: [number, number, number][]) => {
+        ctx.beginPath();
+        pts.forEach(([x, y, z], i) => {
+          const [px, py] = project(x, y, z);
+          if (i) ctx.lineTo(px, py);
+          else ctx.moveTo(px, py);
+        });
+        ctx.stroke();
+      };
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // The floor: a framed plate with ticks, axis names, and the surface as contours.
+      ctx.strokeStyle = colours.line;
+      ctx.lineWidth = 0.8;
+      ctx.globalAlpha = 0.35 * intro;
+      polyline([[-1, -1, FLOOR], [1, -1, FLOOR], [1, 1, FLOOR], [-1, 1, FLOOR], [-1, -1, FLOOR]]);
+      ctx.globalAlpha = 0.3 * intro;
+      ctx.beginPath();
+      for (let k = -4; k <= 4; k++) {
+        const q = k / 4;
+        const ticks: [number, number, number][][] = [
+          [[q, -1, FLOOR], [q, -1.05, FLOOR]],
+          [[-1, q, FLOOR], [-1.05, q, FLOOR]],
+        ];
+        for (const [a, b] of ticks) {
+          const [ax, ay] = project(...a);
+          const [bx, by] = project(...b);
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+        }
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 0.22 * intro;
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      for (const [a, b] of contours) {
+        const [ax, ay] = project(a[0], a[1], FLOOR);
+        const [bx, by] = project(b[0], b[1], FLOOR);
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 0.35 * intro;
+      ctx.lineWidth = 0.8;
+      polyline([[-1, -1, FLOOR], [-1, -1, hi]]);
+      ctx.beginPath();
+      for (let z = Math.ceil(FLOOR * 2) / 2; z <= hi; z += 0.5) {
+        const [ax, ay] = project(-1, -1, z);
+        const [bx, by] = project(-1.05, -1.05, z);
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+      }
+      ctx.stroke();
+      if (w >= 460) {
+        ctx.font = 'italic 13px "Libre Bodoni", Georgia, serif';
+        ctx.fillStyle = colours.muted;
+        ctx.globalAlpha = 0.9 * intro;
+        const tag = (text: string, p: [number, number, number]) => {
+          const [x, y] = project(...p);
+          ctx.fillText(text, x - 6, y + 4);
+        };
+        tag('θ₁', [0, -1.18, FLOOR]);
+        tag('θ₂', [-1.18, 0, FLOOR]);
+        tag('loss', [-1.08, -1.08, hi + 0.2]);
+      }
+
+      // The surface: a fine mesh, every fourth line a little stronger, nearer lines brighter.
+      ctx.strokeStyle = colours.line;
+      for (const across of [false, true]) {
+        for (let i = 0; i <= GRID; i++) {
+          ctx.beginPath();
+          let depth = 0;
+          for (let j = 0; j <= GRID; j++) {
+            const ii = across ? i : j;
+            const jj = across ? j : i;
+            const [x, y, d] = project(-1 + (2 * ii) / GRID, -1 + (2 * jj) / GRID, H[jj][ii]);
+            depth += d;
+            if (j) ctx.lineTo(x, y);
+            else ctx.moveTo(x, y);
+          }
+          const major = i % 4 === 0;
+          ctx.lineWidth = major ? 0.9 : 0.6;
+          ctx.globalAlpha = intro * clamp((major ? 0.2 : 0.1) + 0.1 * (depth / (GRID + 1) + 1));
+          ctx.stroke();
+        }
+      }
+
+      // The descents: shadows on the floor, paths on the surface, a plumb line, the balls.
+      runs.forEach((run, i) => {
+        const gilt = i === 0;
+        const colour = gilt ? colours.glint : colours.line;
+        ctx.strokeStyle = colour;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = (gilt ? 0.45 : 0.3) * intro;
+        if (!gilt) ctx.setLineDash([3, 4]);
+        polyline(run.path.map(([x, y]) => [x, y, FLOOR]));
+        ctx.globalAlpha = (gilt ? 0.95 : 0.7) * intro;
+        ctx.lineWidth = gilt ? 1.7 : 1.2;
+        polyline(run.path.map(([x, y]) => [x, y, f(x, y) + 0.02]));
+        ctx.setLineDash([]);
+        const [x, y] = run.path[run.path.length - 1];
+        const [bx, by] = project(x, y, f(x, y) + 0.02);
+        const [fx, fy] = project(x, y, FLOOR);
+        ctx.globalAlpha = 0.4 * intro;
+        ctx.lineWidth = 0.7;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(fx, fy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = intro;
+        ctx.fillStyle = colour;
+        ctx.beginPath();
+        ctx.arc(bx, by, gilt ? 4.2 : 3.2, 0, TAU);
+        ctx.fill();
+        ctx.globalAlpha = 0.5 * intro;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy, 3.4, 1.8, 0, 0, TAU);
+        ctx.fill();
+      });
+      // The read-out only where it clears the hero's text.
+      if (w >= 700 && runs.length) {
+        const [momentum, plain] = runs.map((run) => {
+          const [x, y] = run.path[run.path.length - 1];
+          return f(x, y);
+        });
+        ctx.font = '11px "JetBrains Mono", ui-monospace, monospace';
+        ctx.globalAlpha = 0.9 * intro;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = colours.glint;
+        ctx.fillText(`momentum  loss ${momentum.toFixed(3)}`, w - 20, h - 34);
+        ctx.fillStyle = colours.muted;
+        ctx.fillText(`plain gradient descent  loss ${plain.toFixed(3)}  · step ${runs[0].path.length - 1}`, w - 20, h - 18);
+        ctx.textAlign = 'left';
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    let begun = 0;
+    let frame = 0;
+    let visible = false;
+    let lastDraw = 0;
+    const loop = (now: number) => {
+      // The race advances in fixed steps; the mesh turns at up to 30 frames a second.
+      while (now - stepped > STEP && runs[0].path.length < 420) {
+        stepped += STEP;
+        runs.forEach(step);
+      }
+      if (now - raceStart > RACE) newRace(now);
+      if (now - lastDraw > 32) {
+        draw(now, now - begun);
+        lastDraw = now;
+      }
+      frame = visible && !document.hidden ? requestAnimationFrame(loop) : 0;
+    };
+    const resume = () => {
+      if (!still && visible && !document.hidden && !frame) frame = requestAnimationFrame(loop);
+    };
+    const paintStill = () => {
+      if (!runs.length || runs[0].path.length < 2) {
+        newRace(0);
+        for (let i = 0; i < 260; i++) runs.forEach(step);
+      }
+      draw(0, Infinity);
+    };
+
+    readColours();
+    resize();
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !begun) {
+        begun = performance.now();
+        newRace(begun);
+      }
+      if (still) paintStill();
+      else resume();
+    }).observe(canvas);
+    document.addEventListener('visibilitychange', resume);
+
+    new ResizeObserver(() => {
+      resize();
+      if (still) paintStill();
+    }).observe(canvas);
+
+    // The theme toggle changes the tokens; repaint with the new colours.
+    new MutationObserver(() => {
+      readColours();
+      if (still) paintStill();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    canvas.addEventListener('click', () => {
+      if (!still && begun) newRace(performance.now());
+    });
+  }
+</script>

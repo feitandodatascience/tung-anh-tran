@@ -196,16 +196,17 @@ ul.tags li {
   min-height: max(36rem, min(100svh, 62rem));
   display: flex; align-items: flex-end;
 }
-/* A faint radial lift behind the rosette, like light on an engraved plate. */
+/* A faint radial lift behind the landscape, like light on an engraved plate. */
 .hero::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: radial-gradient(ellipse 60% 70% at 72% 48%,
+  background: radial-gradient(ellipse 55% 70% at 74% 50%,
     color-mix(in srgb, var(--on-deep) 7%, transparent), transparent 70%);
 }
+/* The loss landscape takes the right two thirds and fades in under the name. */
 .hero-art {
-  position: absolute; z-index: -1;
-  width: min(98svh, 64vw); aspect-ratio: 1;
-  right: max(-14vw, -10rem); top: 50%; translate: 0 -50%;
+  position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 66%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 32%);
+  mask-image: linear-gradient(to right, transparent, #000 32%);
 }
 .hero-art canvas { width: 100%; height: 100%; }
 .hero-inner {
@@ -218,8 +219,6 @@ ul.tags li {
   letter-spacing: -.02em; text-wrap: nowrap;
 }
 .hero-name span { display: block; }
-/* The surname steps in from the left margin, as on an engraved title. */
-.hero-name span + span { padding-left: .9em; }
 .hero-copy { max-width: 31rem; }
 .hero-role {
   font: italic 500 1.6rem/1.3 var(--heading); color: var(--glint); margin-bottom: .5rem;
@@ -232,7 +231,7 @@ ul.tags li {
 }
 .hero-latest a { color: var(--on-deep); }
 
-/* Load sequence: the rosette draws itself (canvas); the type settles in once with it. */
+/* Load sequence: the landscape fades in (canvas); the type settles in once with it. */
 @media (prefers-reduced-motion: no-preference) {
   .hero-name span, .hero-copy, .hero-latest {
     animation: settle 1.1s cubic-bezier(.2,.7,.2,1) both;
@@ -247,7 +246,8 @@ ul.tags li {
 
 @media (max-width: 48rem) {
   .hero { min-height: 100svh; }
-  .hero-art { width: 120vw; right: -42vw; top: 34%; opacity: .55; }
+  /* On phones the landscape spans the hero, quietly, behind the name. */
+  .hero-art { width: 100%; opacity: .45; -webkit-mask-image: none; mask-image: none; }
 }
 
 /* ------------------------------------------------------------------ ledger sections */

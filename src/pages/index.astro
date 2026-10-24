@@ -1,6 +1,6 @@
 ---
 import Placeholder from '../components/Placeholder.astro';
-import Rosette from '../components/Rosette.astro';
+import LossLandscape from '../components/LossLandscape.astro';
 import Base from '../layouts/Base.astro';
 import { POSITIONING, POST_PLACEHOLDERS, PROJECT_PLACEHOLDERS, TAGLINE } from '../data/site';
 import { href, note, plainSummary, postPages, projectPages, publications } from '../lib/content';
@@ -17,7 +17,7 @@ const postSlots = POST_PLACEHOLDERS.slice(0, Math.max(0, 3 - posts.length));
 
 <Base title="Tung Anh Tran, data scientist" description={TAGLINE} deep>
   <section class="hero" aria-labelledby="hero-name">
-    <Rosette class="hero-art" />
+    <LossLandscape class="hero-art" />
     <div class="wrap hero-inner">
       <h1 class="hero-name" id="hero-name">
         <span>Tung Anh</span>
