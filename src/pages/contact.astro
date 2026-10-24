@@ -1,0 +1,46 @@
+---
+import Placeholder from '../components/Placeholder.astro';
+import Base from '../layouts/Base.astro';
+import { CHANNELS, OPEN_TO } from '../data/site';
+---
+
+<Base
+  title="Contact · Tung Anh Tran"
+  description="How to reach Tung Anh Tran about data science, machine learning and analytics work."
+>
+  <header class="wrap page-head">
+    <h1 class="page-title">Contact</h1>
+    <p class="page-lede">Tell me about the data, and the decision it should support.</p>
+  </header>
+
+  <div class="wrap contact-grid">
+    <ul class="channels">
+      {
+        CHANNELS.map((c) => (
+          <li class:list={['channel', { 'channel--placeholder': c.placeholder }]}>
+            <span class="channel-label">{c.label}</span>
+            <span class="channel-value">
+              {c.href ? <a href={c.href}>{c.value}</a> : c.value}
+              {c.placeholder && <Placeholder />}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <aside class="aside" aria-label="Before you write">
+      <h2>Open to</h2>
+      <ul>
+        {OPEN_TO.roles.map((role) => <li>{role} roles</li>)}
+      </ul>
+      <p>{OPEN_TO.domains}</p>
+      <h2>Useful to include</h2>
+      <ul>
+        <li>The question the model or analysis should answer</li>
+        <li>The data: what it is, how much, and who labelled it</li>
+        <li>How the result will be used, and by when</li>
+      </ul>
+    </aside>
+  </div>
+  <div class="wrap page-gap"></div>
+</Base>

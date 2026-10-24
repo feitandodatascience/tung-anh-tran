@@ -1,50 +1,119 @@
 ---
 import Base from '../layouts/Base.astro';
-import { publications } from '../lib/content';
+import { AUTHOR } from '../data/site';
+import { note, publications } from '../lib/content';
+import { findings, monthYear } from '../lib/format';
 
-const AUTHOR = 'Tung Anh Tran';
 const LANGUAGES: Record<string, string> = { fr: 'French', vi: 'Vietnamese' };
-const month = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' });
 
-const items = publications();
+const items = publications().map((item) => {
+  const pub = item.publication;
+  const year = item.date.slice(0, 4);
+  const number = pub.issue ? `, no. ${pub.issue}` : '';
+  const publisher = pub.publisher && pub.publisher !== pub.venue ? `. ${pub.publisher}` : '';
+  return {
+    ...item,
+    findings: findings(note(item)),
+    citation: `${pub.authors.join(' and ')} (${year}). ${item.title}. ${pub.venue}${number}${publisher}.`,
+  };
+});
 ---
 
 <Base
   title="Publications · Tung Anh Tran"
-  description="Published reports and articles by Tung Anh Tran"
+  description="Published reports and articles by Tung Anh Tran, with their main findings."
 >
-  <header class="hero">
-    <p class="eyebrow">Publications</p>
-    <h1>Published work</h1>
+  <header class="wrap page-head">
+    <h1 class="page-title">Publications</h1>
+    <p class="page-lede">Published reports and articles, with the findings that carry each one.</p>
   </header>
 
-  {
-    items.length === 0 ? (
-      <p class="empty">No publications are listed yet.</p>
-    ) : (
-      <ol class="pubs">
-        {items.map(({ title, date, url, publication: pub }) => (
-          <li class="pub">
-            <h2 lang={pub.language}>{url ? <a href={url}>{title}</a> : title}</h2>
-            {pub.title_en && <p class="pub-en">{pub.title_en}</p>}
-            <p class="pub-authors">
-              {pub.authors.map((name, n) => (
-                <>
-                  {n > 0 && ', '}
-                  {name === AUTHOR ? <strong>{name}</strong> : name}
-                </>
-              ))}
-            </p>
-            <p class="pub-meta">
-              <cite>{pub.venue}</cite>
-              {pub.issue && ` n° ${pub.issue}`}
-              {pub.publisher && pub.publisher !== pub.venue && ` · ${pub.publisher}`}
-              {` · ${month.format(new Date(date))}`}
-              {pub.language && LANGUAGES[pub.language] && ` · in ${LANGUAGES[pub.language]}`}
-            </p>
-          </li>
-        ))}
-      </ol>
-    )
-  }
+  <div class="wrap">
+    {
+      items.length === 0 ? (
+        <p class="empty">No publications are listed yet.</p>
+      ) : (
+        <ol class="pub-list">
+          {items.map(({ title, date, url, publication: pub, findings: found, citation }) => (
+            <li class="pub">
+              <p class="kind">
+                {pub.venue}
+                {pub.issue && ` no. ${pub.issue}`}, {monthYear(date)}
+                {pub.language && LANGUAGES[pub.language] && `, in ${LANGUAGES[pub.language]}`}
+              </p>
+              <h2 class="pub-title" lang={pub.language}>
+                {title}
+              </h2>
+              {pub.title_en && <p class="citation-en">{pub.title_en}</p>}
+              <p class="pub-authors">
+                {pub.authors.map((name, n) => (
+                  <>
+                    {n > 0 && (n === pub.authors.length - 1 ? ' and ' : ', ')}
+                    {name === AUTHOR ? <strong>{name}</strong> : name}
+                  </>
+                ))}
+              </p>
+              <p class="pub-meta">
+                Published by {pub.publisher ?? pub.venue}
+              </p>
+
+              {found.length > 0 && (
+                <dl class="findings">
+                  {found.slice(0, 3).map((f) => (
+                    <div>
+                      <dt>{f.value}</dt>
+                      <dd>{f.name}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {found.length > 0 && (
+                <details>
+                  <summary>Scope and source of each finding</summary>
+                  <dl>
+                    {found.map((f) => (
+                      <div>
+                        <dt>
+                          {f.name}: {f.value}
+                        </dt>
+                        <dd>{f.context}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+              )}
+
+              <div class="pub-actions">
+                {url && (
+                  <a class="button button--solid" href={url}>
+                    Read it on {new URL(url).hostname.replace(/^www\./, '')}
+                  </a>
+                )}
+                <button class="button button--outline copy" type="button" data-citation={citation}>
+                  Copy citation
+                </button>
+                <span class="copied" role="status"></span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </div>
+  <div class="wrap page-gap"></div>
+
+  <script>
+    document.querySelectorAll<HTMLButtonElement>('.copy').forEach((button) => {
+      const status = button.parentElement?.querySelector('.copied');
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(button.dataset.citation ?? '');
+          if (status) status.textContent = 'Citation copied';
+        } catch {
+          if (status) status.textContent = 'Copying is blocked here; select the text instead';
+        }
+      });
+    });
+  </script>
 </Base>

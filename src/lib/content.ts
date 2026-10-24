@@ -3,6 +3,7 @@
 // FEITAN_CONTENT_DIR to try another export folder locally without committing it.
 import fs from 'node:fs';
 import path from 'node:path';
+import { parse } from 'yaml';
 
 // Format 3 adds publications to format 2, so a format-2 export still reads correctly.
 const FORMATS = ['public-export/2', 'public-export/3'];
@@ -27,6 +28,25 @@ export interface Entry {
   page?: string;
   publication?: Citation;
   url?: string | null;
+}
+
+export interface Metric {
+  name: string;
+  value: string;
+  context: string;
+}
+
+/** A note's exported frontmatter (the export never includes the note body). */
+export interface Note {
+  id: string;
+  type: Entry['type'];
+  title: string;
+  date: string;
+  tags: string[];
+  skills: string[];
+  tools: string[];
+  links: Record<string, string | null>;
+  metrics: Metric[];
 }
 
 export interface Stat {
@@ -68,6 +88,49 @@ export function pages(): { entry: Entry; page: Page }[] {
     .filter((entry) => entry.page)
     .map((entry) => ({ entry, page: JSON.parse(read(entry.page!)) as Page }))
     .sort((a, b) => b.entry.date.localeCompare(a.entry.date));
+}
+
+/** Write-ups of projects and competitions (the Projects section). */
+export function projectPages() {
+  return pages().filter(({ entry }) => entry.type !== 'learning');
+}
+
+/** Write-ups of learning notes (the Blog section). */
+export function postPages() {
+  return pages().filter(({ entry }) => entry.type === 'learning');
+}
+
+/** Where a write-up lives on the site. */
+export function href(entry: Entry): string {
+  return `/${entry.type === 'learning' ? 'blog' : 'projects'}/${entry.id}/`;
+}
+
+/** The exported frontmatter of one note. */
+export function note(entry: Entry): Note {
+  const text = read(entry.path);
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) throw new Error(`${entry.path} has no frontmatter`);
+  const meta = parse(match[1]);
+  return {
+    ...meta,
+    tags: meta.tags ?? [],
+    skills: meta.skills ?? [],
+    tools: meta.tools ?? [],
+    links: meta.links ?? {},
+    metrics: meta.metrics ?? [],
+  } as Note;
+}
+
+/** Tools and methods named across every exported note, in first-seen order. */
+export function toolkit(): { tools: string[]; skills: string[] } {
+  const tools = new Set<string>();
+  const skills = new Set<string>();
+  for (const entry of entries()) {
+    const meta = note(entry);
+    meta.tools.forEach((t) => tools.add(t));
+    meta.skills.forEach((s) => skills.add(s));
+  }
+  return { tools: [...tools], skills: [...skills] };
 }
 
 /** Every publication with its citation, newest first. */

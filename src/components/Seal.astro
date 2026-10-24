@@ -1,0 +1,43 @@
+---
+// The TA monogram inside an engraved ring. Small sizes drop the engraving, which would
+// only blur at that scale.
+import { rosettePaths, type Band } from '../lib/guilloche';
+
+interface Props {
+  size?: number;
+  engraved?: boolean;
+  class?: string;
+}
+
+const { size = 40, engraved = size >= 56, class: className } = Astro.props;
+const RING: Band[] = [{ radius: 0.82, amp: 0.05, waves: 14, copies: 5 }];
+const paths = engraved ? rosettePaths(100, RING, 280) : [];
+---
+
+<svg
+  class:list={['seal', className]}
+  viewBox="0 0 100 100"
+  width={size}
+  height={size}
+  aria-hidden="true"
+>
+  <circle cx="50" cy="50" r="48.5" fill="none" stroke="currentColor" stroke-width="1" />
+  <circle
+    cx="50"
+    cy="50"
+    r={engraved ? 33 : 44}
+    fill="none"
+    stroke="currentColor"
+    stroke-width={engraved ? 0.6 : 0.8}
+  />
+  {paths.map(({ d }) => <path d={d} fill="none" stroke="currentColor" stroke-width="0.45" />)}
+  <text
+    x="50"
+    y="50"
+    dy="0.36em"
+    text-anchor="middle"
+    fill="currentColor"
+    font-size={engraved ? 30 : 42}
+    class="seal-text">TA</text
+  >
+</svg>

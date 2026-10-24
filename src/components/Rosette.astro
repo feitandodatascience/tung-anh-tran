@@ -1,0 +1,160 @@
+---
+// The hero's engraved rosette. It draws itself in once on load, then the bands turn
+// slowly against each other, like a rose engine, and swell around the pointer.
+// Reduced motion gets the finished drawing, still.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['rosette', className]} aria-hidden="true">
+  <canvas data-rosette></canvas>
+</div>
+
+<script>
+  import { ROSETTE, bandRadius } from '../lib/guilloche';
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-rosette]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const STEPS = 300;
+    const DRAW_MS = 1500; // one copy's draw-in
+    const BAND_DELAY = 380;
+    const COPY_DELAY = 26;
+    const TWO_PI = Math.PI * 2;
+
+    let size = 0;
+    let dpr = 1;
+    let line = '';
+    let glint = '';
+    let start = 0;
+    let frame = 0;
+    let visible = true;
+    // Pointer lens, in units of the outer radius, eased towards its target each frame.
+    const lens = { x: 0, y: 0, k: 0, tx: 0, ty: 0, tk: 0 };
+
+    const readColours = () => {
+      const css = getComputedStyle(canvas);
+      line = css.getPropertyValue('--on-deep').trim();
+      glint = css.getPropertyValue('--glint').trim();
+    };
+
+    const resize = () => {
+      size = canvas.clientWidth;
+      // Hairlines need the pixels, but a very large canvas does not need full density.
+      dpr = Math.min(devicePixelRatio || 1, size > 700 ? 1.5 : 2);
+      canvas.width = Math.round(size * dpr);
+      canvas.height = Math.round(size * dpr);
+    };
+
+    const ease = (p: number) => 1 - Math.pow(1 - p, 3);
+
+    const draw = (now: number) => {
+      const elapsed = still ? Infinity : now - start;
+      const r = (size / 2) * 0.98;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      ctx.lineJoin = 'round';
+
+      lens.x += (lens.tx - lens.x) * 0.08;
+      lens.y += (lens.ty - lens.y) * 0.08;
+      lens.k += (lens.tk - lens.k) * 0.06;
+
+      // Fine double border, the frame of an engraved plate.
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 0.6;
+      for (const rr of [1, 0.975]) {
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, r * rr, 0, TWO_PI);
+        ctx.stroke();
+      }
+
+      ROSETTE.forEach((band, b) => {
+        const drift = still ? 0 : (now / 1000) * 0.06 * (b % 2 ? -1 : 1);
+        for (let c = 0; c < band.copies; c++) {
+          const delay = b * BAND_DELAY + c * COPY_DELAY;
+          const p = ease(Math.min(1, Math.max(0, (elapsed - delay) / DRAW_MS)));
+          if (p <= 0) continue;
+          const hot = b === 1 && c === 0;
+          ctx.globalAlpha = hot ? 0.95 : 0.2 + b * 0.05;
+          ctx.strokeStyle = hot ? glint : line;
+          ctx.lineWidth = hot ? 1.2 : 0.6;
+          ctx.beginPath();
+          const last = Math.ceil(STEPS * p);
+          for (let i = 0; i <= last; i++) {
+            const t = -Math.PI / 2 + (Math.min(i, STEPS * p) / STEPS) * TWO_PI;
+            let rho = bandRadius(band, c, t, drift);
+            if (lens.k > 0.001) {
+              const dx = rho * Math.cos(t) - lens.x;
+              const dy = rho * Math.sin(t) - lens.y;
+              rho += lens.k * Math.exp(-(dx * dx + dy * dy) / 0.02);
+            }
+            const x = size / 2 + rho * r * Math.cos(t);
+            const y = size / 2 + rho * r * Math.sin(t);
+            if (i) ctx.lineTo(x, y);
+            else ctx.moveTo(x, y);
+          }
+          ctx.stroke();
+        }
+      });
+      ctx.globalAlpha = 1;
+    };
+
+    // Once drawn in, the drift is slow enough that 30 frames a second look the same.
+    const SETTLED = DRAW_MS + (ROSETTE.length - 1) * BAND_DELAY + 40 * COPY_DELAY;
+    let last = 0;
+    const loop = (now: number) => {
+      if (now - start < SETTLED || now - last > 32) {
+        draw(now);
+        last = now;
+      }
+      frame = visible && !document.hidden ? requestAnimationFrame(loop) : 0;
+    };
+    const play = () => {
+      if (!still && !frame) frame = requestAnimationFrame(loop);
+    };
+
+    readColours();
+    resize();
+    start = performance.now();
+    if (still) draw(start);
+    else play();
+
+    new ResizeObserver(() => {
+      resize();
+      if (still) draw(performance.now());
+    }).observe(canvas);
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) play();
+    }).observe(canvas);
+
+    document.addEventListener('visibilitychange', play);
+
+    // The theme toggle changes the tokens; repaint with the new colours.
+    new MutationObserver(() => {
+      readColours();
+      if (still) draw(performance.now());
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    if (!still) {
+      const hero = canvas.closest('section') ?? canvas;
+      hero.addEventListener('pointermove', (e: Event) => {
+        const { clientX, clientY } = e as PointerEvent;
+        const box = canvas.getBoundingClientRect();
+        const r = (box.width / 2) * 0.98;
+        lens.tx = (clientX - box.left - box.width / 2) / r;
+        lens.ty = (clientY - box.top - box.height / 2) / r;
+        lens.tk = 0.045;
+      });
+      hero.addEventListener('pointerleave', () => {
+        lens.tk = 0;
+      });
+    }
+  }
+</script>

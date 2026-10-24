@@ -1,0 +1,69 @@
+---
+import Placeholder from '../../components/Placeholder.astro';
+import Base from '../../layouts/Base.astro';
+import { PROJECT_PLACEHOLDERS } from '../../data/site';
+import { href, plainSummary, projectPages } from '../../lib/content';
+
+const work = projectPages();
+---
+
+<Base
+  title="Projects · Tung Anh Tran"
+  description="Competitions and projects by Tung Anh Tran, each with its validation setup, model quality and caveats."
+>
+  <header class="wrap page-head">
+    <h1 class="page-title">Projects</h1>
+    <p class="page-lede">
+      Competitions and projects, each written up with how it was validated, how good the
+      model is, and where it is weak.
+    </p>
+  </header>
+
+  <div class="wrap">
+    <ul class="index-list">
+      {
+        work.map(({ entry, page }) => (
+          <li class="index-item">
+            <div>
+              <p class="kind">{page.eyebrow.split(' · ').join(', ')}</p>
+              <h2 class="index-title">
+                <a href={href(entry)}>{page.title}</a>
+              </h2>
+              <p class="index-text" set:html={plainSummary(page.summary_html)} />
+              <ul class="tags">
+                {page.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            </div>
+            {page.stats[0] && (
+              <div class="index-stat">
+                <p class="index-stat-v">{page.stats[0].value}</p>
+                <p class="index-stat-l">{page.stats[0].label}</p>
+              </div>
+            )}
+          </li>
+        ))
+      }
+      {
+        PROJECT_PLACEHOLDERS.map((slot) => (
+          <li class="index-item index-item--placeholder">
+            <div>
+              <p class="kind">
+                {slot.kind} <Placeholder />
+              </p>
+              <h2 class="index-title">{slot.title}</h2>
+              <p class="index-text">{slot.summary}</p>
+              <ul class="tags">
+                {slot.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  <div class="wrap page-gap"></div>
+</Base>

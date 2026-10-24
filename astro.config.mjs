@@ -4,4 +4,8 @@ import { defineConfig } from 'astro/config';
 // URLs, a sitemap and RSS).
 export default defineConfig({
   output: 'static',
+  // Write-ups used to live under /work/; Work is now the experience page.
+  redirects: {
+    '/work/[id]': '/projects/[id]',
+  },
 });

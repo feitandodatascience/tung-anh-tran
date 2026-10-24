@@ -1,0 +1,138 @@
+---
+import Placeholder from '../components/Placeholder.astro';
+import Base from '../layouts/Base.astro';
+import { LANGUAGES, POSITIONING, TAGLINE } from '../data/site';
+import { rosettePaths, type Band } from '../lib/guilloche';
+import { href, projectPages, toolkit } from '../lib/content';
+
+const { tools, skills } = toolkit();
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Lessons the approved DaT write-up records, restated as working habits.
+const dat = projectPages().find(({ entry }) => entry.id === 'drivendata-dat-parkinsons-challenge');
+const principles = [
+  {
+    title: 'Calibrate out of sample',
+    text: 'A calibrator scored on its own training predictions looks better than it is. In the DaT challenge, the one that looked best in-sample did worse than no calibration once it was cross-validated.',
+  },
+  {
+    title: 'Break results down by group',
+    text: 'A pooled score can hide the groups that matter most. The same baseline looked well calibrated on all scans and was far off on its smallest acquisition family.',
+  },
+  {
+    title: 'Stack models that fail differently',
+    text: 'A weaker model that is wrong on different cases can add more than a stronger copy of what is already there. The tree model, weaker alone, carried a third of the final stack.',
+  },
+];
+
+// An oval cameo: the engraved ring stretched upright, around the monogram.
+const RING: Band[] = [
+  { radius: 0.9, amp: 0.035, waves: 22, copies: 6 },
+  { radius: 0.78, amp: 0.05, waves: 11, copies: 8 },
+];
+const ring = rosettePaths(200, RING, 420);
+---
+
+<Base title="About · Tung Anh Tran" description={TAGLINE}>
+  <header class="wrap page-head about-head">
+    <div>
+      <h1 class="page-title">About</h1>
+      <p class="page-lede">{POSITIONING}</p>
+    </div>
+    <figure class="cameo">
+      <svg viewBox="0 0 200 250" role="img" aria-label="Monogram TA in an engraved oval frame">
+        <g transform="scale(1 1.25)">
+          {ring.map(({ d }) => <path d={d} fill="none" stroke="currentColor" stroke-width="0.5" vector-effect="non-scaling-stroke" opacity="0.7" />)}
+          <ellipse cx="100" cy="100" rx="64" ry="64" fill="none" stroke="currentColor" stroke-width="0.8" vector-effect="non-scaling-stroke" />
+          <ellipse cx="100" cy="100" rx="99" ry="99" fill="none" stroke="currentColor" stroke-width="0.8" vector-effect="non-scaling-stroke" />
+        </g>
+        <text x="100" y="125" dy="0.35em" text-anchor="middle" fill="currentColor" font-size="64" class="seal-text">TA</text>
+      </svg>
+      <figcaption>Portrait to come <Placeholder /></figcaption>
+    </figure>
+  </header>
+
+  <div class="wrap">
+    <section class="ledger" aria-labelledby="story">
+      <h2 class="ledger-label" id="story">Background</h2>
+      <div class="ledger-body">
+        <div class="prose prose--placeholder">
+          <p><Placeholder /></p>
+          <p>
+            Two or three sentences on where I trained, the teams I have worked in and the
+            kind of data I have spent most time with.
+          </p>
+          <p>
+            One or two sentences on what I am looking for next, and the problems I would
+            most like to work on.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="habits">
+      <h2 class="ledger-label" id="habits">How I work</h2>
+      <div class="ledger-body">
+        <ul class="principles">
+          {
+            principles.map((p) => (
+              <li class="principle">
+                <h3>{p.title}</h3>
+                <p>{p.text}</p>
+              </li>
+            ))
+          }
+        </ul>
+        {
+          dat && (
+            <p class="evidence-link">
+              <a class="more" href={href(dat.entry)}>
+                The numbers behind these, in the DaT write-up
+              </a>
+            </p>
+          )
+        }
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="kit">
+      <h2 class="ledger-label" id="kit">Toolkit</h2>
+      <div class="ledger-body toolkit">
+        <div>
+          <h3>Methods</h3>
+          <ul>{skills.map((s) => <li>{capital(s)}</li>)}</ul>
+        </div>
+        <div>
+          <h3>Tools</h3>
+          <ul>{tools.map((t) => <li>{t}</li>)}</ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="facts">
+      <h2 class="ledger-label" id="facts">In brief</h2>
+      <div class="ledger-body">
+        <dl class="facts">
+          <div>
+            <dt>Based in</dt>
+            <dd>City, country <Placeholder /></dd>
+          </div>
+          {
+            LANGUAGES.map((lang) => (
+              <div>
+                <dt>Languages</dt>
+                <dd>
+                  {lang.name} {lang.placeholder && <Placeholder />}
+                </dd>
+              </div>
+            ))
+          }
+          <div>
+            <dt>Experience and education</dt>
+            <dd><a href="/work/">See Work</a></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </div>
+</Base>

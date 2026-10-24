@@ -1,0 +1,123 @@
+---
+// One approved write-up, laid out from its rendered page parts (export *.page.json).
+import Base from '../layouts/Base.astro';
+import { asset, plainSummary, titleOf, type Page } from '../lib/content';
+import { slug } from '../lib/format';
+
+interface Props {
+  page: Page;
+  back: { href: string; label: string };
+}
+
+const { page, back } = Astro.props;
+const figureCss = asset('figures.css');
+const figureJs = asset('figures.js');
+
+// Give each section heading an id, so the contents list can link to it.
+const sections: { id: string; title: string }[] = [];
+const body = page.body_html.replace(/<h2>(.*?)<\/h2>/g, (_, inner: string) => {
+  const id = slug(inner);
+  sections.push({ id, title: inner.replace(/<[^>]+>/g, '') });
+  return `<h2 id="${id}">${inner}</h2>`;
+});
+sections.push({ id: 'sources', title: 'Sources' });
+const meta = page.eyebrow.split(' · ').join(', ');
+---
+
+<Base title={`${page.title} · Tung Anh Tran`} description={plainSummary(page.summary_html)}>
+  <style slot="head" is:global set:html={figureCss}></style>
+  <div class="reading-bar" aria-hidden="true"></div>
+
+  <header class="wrap writeup-head">
+    <p class="crumb"><a href={back.href}>{back.label}</a></p>
+    {meta && <p class="kind">{meta}</p>}
+    <h1 class="writeup-title">{page.title}</h1>
+    <p class="writeup-lede" set:html={page.summary_html} />
+    <ul class="tags">{page.tags.map((tag) => <li>{tag}</li>)}</ul>
+    {
+      page.stats.length > 0 && (
+        <section class="stats" aria-label="Key results">
+          {page.stats.map((stat, n) => (
+            <div class={n === 0 ? 'stat stat--signal' : 'stat'}>
+              <div class="stat-v">{stat.value}</div>
+              <div class="stat-l">{stat.label}</div>
+              <div class="stat-n">{stat.note}</div>
+            </div>
+          ))}
+        </section>
+      )
+    }
+  </header>
+
+  <div class="wrap writeup-grid">
+    <nav class="toc" aria-label="On this page">
+      <p>On this page</p>
+      <ol>
+        {sections.map(({ id, title }) => (
+          <li><a href={`#${id}`}>{title}</a></li>
+        ))}
+      </ol>
+    </nav>
+    <article class="article-body">
+      <Fragment set:html={body} />
+      <h2 id="sources">Sources</h2>
+      <p>Each <span class="cite-key">[src]</span> marker cites one of these project records:</p>
+      <ul class="sources">
+        {page.sources.map((id) => <li>{titleOf(id)}</li>)}
+      </ul>
+    </article>
+  </div>
+
+  <div class="wrap">
+    <nav class="writeup-foot" aria-label="More">
+      <a class="more" href={back.href}>{back.label}</a>
+      <a class="more" href="/contact/">Ask me about this work</a>
+    </nav>
+  </div>
+
+  <script is:inline set:html={figureJs}></script>
+  <script>
+    // Reading progress along the top edge, and the current section in the contents.
+    const bar = document.querySelector<HTMLElement>('.reading-bar');
+    const article = document.querySelector<HTMLElement>('.article-body');
+    const toc = document.querySelector<HTMLElement>('.toc');
+    const figures = [...document.querySelectorAll<HTMLElement>('.article-body .fig')];
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+    const heads = links
+      .map((a) => document.getElementById(a.hash.slice(1)))
+      .filter((h): h is HTMLElement => !!h);
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      if (bar && article) {
+        const box = article.getBoundingClientRect();
+        const done = (innerHeight * 0.5 - box.top) / box.height;
+        bar.style.transform = `scaleX(${Math.min(1, Math.max(0, done))})`;
+      }
+      let current = heads[0];
+      for (const h of heads) if (h.getBoundingClientRect().top < innerHeight * 0.3) current = h;
+      links.forEach((a) =>
+        a.setAttribute('aria-current', String(a.hash === `#${current?.id}`)),
+      );
+      // Wide figures extend under the contents list; it steps aside while one passes.
+      if (toc) {
+        const t = toc.getBoundingClientRect();
+        const under = figures.some((f) => {
+          const r = f.getBoundingClientRect();
+          return r.left < t.right && r.top < t.bottom && r.bottom > t.top;
+        });
+        toc.classList.toggle('toc--under', under);
+      }
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) requestAnimationFrame(update);
+        ticking = true;
+      },
+      { passive: true },
+    );
+    update();
+  </script>
+</Base>
