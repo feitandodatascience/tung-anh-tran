@@ -101,6 +101,12 @@ export const EDUCATION = [
 
 export const LANGUAGES = [{ name: 'Languages to come', level: '', placeholder: true }];
 
+/**
+ * The write-up the home page leads with under "Selected work", whatever its date.
+ * Falls back to the newest write-up when this id is not in the export.
+ */
+export const FEATURED_PROJECT = 'drivendata-dat-parkinsons-challenge';
+
 export interface Teaser {
   title: string;
   summary: string;
