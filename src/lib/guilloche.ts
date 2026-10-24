@@ -1,6 +1,6 @@
 // Guilloché: the engraved, interlaced line work of banknotes and certificates, built
-// here from sums of sines in polar form. The same bands drive the static ornaments
-// (SVG, rendered at build time) and the animated hero (canvas, public/hero.js).
+// here from sums of sines in polar form. The bands drive the seal's engraved ring (SVG,
+// rendered at build time).
 
 export interface Band {
   /** Mean radius, as a share of the ornament's outer radius. */

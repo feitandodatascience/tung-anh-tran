@@ -1,0 +1,188 @@
+---
+// The About portrait: the head-and-shoulders photo, toned from deep green to pearl, in a
+// hexagon with a gilt edge. The edge draws itself while the photo fades up, then a very slow
+// zoom keeps it alive while it is on screen. Reduced motion gets the finished frame, still.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<figure class:list={['hex-portrait', className]}>
+  <canvas data-hex-portrait role="img" aria-label="Portrait of Tung Anh Tran"></canvas>
+</figure>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-hex-portrait]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SIDES = 6;
+    const TAU = Math.PI * 2;
+    const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const easeOut = (p: number) => 1 - Math.pow(1 - p, 3);
+    const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+    const rgb = (hex: string) => {
+      const h = hex.replace('#', '');
+      return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+    };
+
+    const colours = { deep: '', pearl: '', gilt: '', line: '' };
+    const readColours = () => {
+      const css = getComputedStyle(canvas);
+      colours.deep = css.getPropertyValue('--deep').trim();
+      colours.pearl = css.getPropertyValue('--on-deep').trim();
+      colours.gilt = css.getPropertyValue('--accent').trim();
+      colours.line = css.getPropertyValue('--primary').trim();
+    };
+
+    const photo = new Image();
+    photo.src = '/portrait-about.jpg';
+    let toned: HTMLCanvasElement | null = null;
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let r = 0;
+    let cx = 0;
+    let cy = 0;
+    let dw = 0;
+    let dh = 0;
+    let ox = 0;
+    let oy = 0;
+
+    const corner = (i: number, radius: number): [number, number] => {
+      const a = -Math.PI / 2 + (i * TAU) / SIDES;
+      return [cx + Math.cos(a) * radius, cy + Math.sin(a) * radius];
+    };
+    // A hexagon, drawn as a share of its perimeter, clockwise from the top.
+    const outline = (radius: number, share = 1) => {
+      const [x0, y0] = corner(0, radius);
+      ctx.moveTo(x0, y0);
+      for (let i = 0; i < SIDES; i++) {
+        const f = clamp(share * SIDES - i);
+        if (f <= 0) break;
+        const [ax, ay] = corner(i, radius);
+        const [bx, by] = corner(i + 1, radius);
+        ctx.lineTo(ax + (bx - ax) * f, ay + (by - ay) * f);
+      }
+    };
+
+    // The photo toned from deep green (shadows) to pearl (lights), at the size it is drawn.
+    const tone = () => {
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(dw * dpr));
+      c.height = Math.max(1, Math.round(dh * dpr));
+      const x = c.getContext('2d');
+      if (!x) return null;
+      x.imageSmoothingQuality = 'high';
+      x.drawImage(photo, 0, 0, c.width, c.height);
+      const im = x.getImageData(0, 0, c.width, c.height);
+      const d = im.data;
+      const [r0, g0, b0] = rgb(colours.deep).map((v) => v * 0.62);
+      const [r1, g1, b1] = rgb(colours.pearl);
+      for (let i = 0; i < d.length; i += 4) {
+        const L = Math.pow(d[i] / 255, 1.08);
+        d[i] = r0 + (r1 - r0) * L;
+        d[i + 1] = g0 + (g1 - g0) * L;
+        d[i + 2] = b0 + (b1 - b0) * L;
+      }
+      x.putImageData(im, 0, 0);
+      return c;
+    };
+
+    const layout = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      if (!photo.naturalWidth || !w || !h) return;
+      r = Math.min(h * 0.46, w * 0.5);
+      cx = w / 2;
+      cy = h / 2;
+      dw = 2.1 * r;
+      dh = (dw * photo.naturalHeight) / photo.naturalWidth;
+      // The face sits a little above the hexagon's centre.
+      ox = cx - 0.455 * dw;
+      oy = cy - 0.06 * r - 0.4 * dh;
+      toned = tone();
+    };
+
+    const draw = (t: number) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      if (!toned) return false;
+      const f = easeInOut(clamp(t / 1400));
+      const q = easeOut(clamp((t - 300) / 1400));
+      const breathe = still ? 0 : 0.012 * (0.5 - 0.5 * Math.cos((t / 1000) * (TAU / 24)));
+      const scale = 1.04 - 0.04 * q + breathe;
+      ctx.save();
+      ctx.beginPath();
+      outline(r);
+      ctx.clip();
+      ctx.globalAlpha = q;
+      ctx.translate(cx, cy);
+      ctx.scale(scale, scale);
+      ctx.drawImage(toned, ox - cx, oy - cy, dw, dh);
+      ctx.restore();
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = colours.gilt;
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      outline(r * 0.995, f);
+      ctx.stroke();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = colours.line;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      outline(r * 1.07, f);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      return !still;
+    };
+
+    let start = 0;
+    let frame = 0;
+    let visible = false;
+    let begun = false;
+    const elapsed = () => (still ? Infinity : performance.now() - start);
+    const loop = () => {
+      frame = draw(elapsed()) && visible && !document.hidden ? requestAnimationFrame(loop) : 0;
+    };
+    const resume = () => {
+      if (begun && !still && visible && !frame) frame = requestAnimationFrame(loop);
+    };
+    const redraw = () => {
+      if (!frame && (begun || still)) draw(elapsed());
+    };
+
+    readColours();
+    photo.decode().then(() => {
+      layout();
+      new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible && !begun) {
+          begun = true;
+          start = performance.now();
+        }
+        if (still) redraw();
+        else resume();
+      }).observe(canvas);
+    });
+
+    new ResizeObserver(() => {
+      layout();
+      redraw();
+    }).observe(canvas);
+    document.addEventListener('visibilitychange', resume);
+
+    // The theme toggle changes the tokens; repaint with the new colours.
+    new MutationObserver(() => {
+      readColours();
+      layout();
+      redraw();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+</script>

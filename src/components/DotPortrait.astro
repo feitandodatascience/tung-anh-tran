@@ -1,0 +1,194 @@
+---
+// The hero portrait as a halftone of data points: a few thousand dots start as one normal
+// cloud and settle together into the photo, each sized by the light under it. It plays once
+// when the hero is first seen; clicking replays it. Reduced motion gets the finished
+// halftone, still.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['dot-portrait', className]} aria-hidden="true">
+  <canvas data-dot-portrait></canvas>
+</div>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-dot-portrait]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SETTLE = 1700; // one dot's journey
+    const SPREAD = 650; // dots leave the cloud over this window
+
+    const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const smooth = (a: number, b: number, x: number) => {
+      const t = clamp((x - a) / (b - a));
+      return t * t * (3 - 2 * t);
+    };
+    const ease = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+    const gauss = () => {
+      let u = 0;
+      while (!u) u = Math.random();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
+    };
+
+    let colour = '';
+    const readColour = () => {
+      colour = getComputedStyle(canvas).getPropertyValue('--on-deep').trim();
+    };
+
+    // The photo as luminance, 0 to 1.
+    let lum: Float32Array | null = null;
+    let pw = 0;
+    let ph = 0;
+    const lumAt = (u: number, v: number) =>
+      !lum || u < 0 || v < 0 || u >= 1 || v >= 1 ? 0 : lum[((v * ph) | 0) * pw + ((u * pw) | 0)];
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let n = 0;
+    let tx = new Float32Array(0);
+    let ty = new Float32Array(0);
+    let tr = new Float32Array(0);
+    let sx = new Float32Array(0);
+    let sy = new Float32Array(0);
+    let delay = new Float32Array(0);
+
+    // Start positions: one normal cloud around the portrait's centre.
+    const scatter = () => {
+      let mx = 0;
+      let my = 0;
+      for (let i = 0; i < n; i++) {
+        mx += tx[i] / n;
+        my += ty[i] / n;
+      }
+      const sd = h * 0.2;
+      for (let i = 0; i < n; i++) {
+        sx[i] = mx + gauss() * sd;
+        sy[i] = my + gauss() * sd;
+        delay[i] = Math.random() * SPREAD;
+      }
+    };
+
+    // Targets: a hexagonal dot screen over the photo, each dot sized by the light under it.
+    const layout = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      if (!lum || !w || !h) return;
+      // The portrait fills the height against the right edge, centred when narrow.
+      let k = h / ph;
+      if (pw * k > w) k = w / pw;
+      const ox = (w - pw * k) * (w < 460 ? 0.5 : 1);
+      const oy = h - ph * k;
+      const d = clamp(h / 150, 3, 5);
+      const xs: number[] = [];
+      const ys: number[] = [];
+      const rs: number[] = [];
+      for (let j = 0, y = oy + d / 2; y < h; j++, y += d * 0.866) {
+        for (let x = Math.max(0, ox) + ((j % 2) * d) / 2 + d / 2; x < Math.min(w, ox + pw * k); x += d) {
+          const u = (x - ox) / (pw * k);
+          const v = (y - oy) / (ph * k);
+          // Fades in from the left, under the name, and stays clear of the navigation.
+          const L = smooth(0.05, 0.9, lumAt(u, v)) * smooth(0, 0.24, u) * smooth(1, 0.96, u) * smooth(0.04, 0.2, v);
+          if (L < 0.04) continue;
+          xs.push(x);
+          ys.push(y);
+          rs.push(d * 0.53 * Math.sqrt(L));
+        }
+      }
+      n = xs.length;
+      tx = Float32Array.from(xs);
+      ty = Float32Array.from(ys);
+      tr = Float32Array.from(rs);
+      sx = new Float32Array(n);
+      sy = new Float32Array(n);
+      delay = new Float32Array(n);
+      scatter();
+    };
+
+    const draw = (t: number) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      let moving = false;
+      ctx.fillStyle = colour;
+      ctx.globalAlpha = 0.95;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const p = ease(clamp((t - delay[i]) / SETTLE));
+        if (p < 1) moving = true;
+        const x = sx[i] + (tx[i] - sx[i]) * p;
+        const y = sy[i] + (ty[i] - sy[i]) * p;
+        const r = 1.1 + (tr[i] - 1.1) * p;
+        if (r < 0.3) continue;
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      return moving;
+    };
+
+    let start = 0;
+    let frame = 0;
+    let begun = false;
+    const elapsed = () => (still ? Infinity : performance.now() - start);
+    const loop = () => {
+      frame = draw(elapsed()) ? requestAnimationFrame(loop) : 0;
+    };
+    const play = () => {
+      start = performance.now();
+      if (!frame) frame = requestAnimationFrame(loop);
+    };
+    // Repaints between frames (resize, theme), but never ahead of the first play.
+    const redraw = () => {
+      if (!frame && (begun || still)) draw(elapsed());
+    };
+
+    readColour();
+    const photo = new Image();
+    photo.src = '/portrait.jpg';
+    photo.decode().then(() => {
+      pw = photo.naturalWidth;
+      ph = photo.naturalHeight;
+      const off = document.createElement('canvas');
+      off.width = pw;
+      off.height = ph;
+      const octx = off.getContext('2d');
+      if (!octx) return;
+      octx.drawImage(photo, 0, 0);
+      const data = octx.getImageData(0, 0, pw, ph).data;
+      lum = new Float32Array(pw * ph);
+      for (let i = 0; i < lum.length; i++) lum[i] = data[i * 4] / 255;
+      layout();
+      // Play once, the first time the hero is in view.
+      new IntersectionObserver((entries, observer) => {
+        if (!entries[0].isIntersecting || begun) return;
+        begun = true;
+        observer.disconnect();
+        play();
+      }, { threshold: 0.3 }).observe(canvas);
+    });
+
+    new ResizeObserver(() => {
+      layout();
+      redraw();
+    }).observe(canvas);
+
+    new MutationObserver(() => {
+      readColour();
+      redraw();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    canvas.addEventListener('click', () => {
+      if (!begun || still) return;
+      scatter();
+      play();
+    });
+  }
+</script>
