@@ -1,5 +1,9 @@
 {
-  "format": "public-export/3",
+  "cv": {
+    "data": "cv/cv.json",
+    "pdf": "cv/tung-anh-tran-cv.pdf"
+  },
+  "format": "public-export/4",
   "notes": [
     {
       "date": "2026-09-01",
