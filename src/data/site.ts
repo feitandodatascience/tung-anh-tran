@@ -1,6 +1,7 @@
 // Site copy that does not come from the export: navigation, profile links and the
 // placeholder entries shown until real ones are approved. Every placeholder carries
 // `placeholder: true`, and the pages mark it as such, so nothing reads as a real claim.
+// Roles, education, languages, email and LinkedIn come from the CV once it is exported.
 
 export const AUTHOR = 'Tung Anh Tran';
 

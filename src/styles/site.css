@@ -418,6 +418,21 @@ ul.tags li {
 .role ul { margin: .5rem 0 0; padding-left: 1.1rem; color: var(--muted); }
 .role li { margin-bottom: .3rem; }
 .role li::marker { color: var(--faint); }
+.role li strong { font-weight: 500; color: var(--primary); }
+/* Titles the CV sets in capitals read as engraved lettering: smaller, spaced. */
+.role-title--caps { font-size: clamp(1.3rem, 2.2vw, 1.6rem); letter-spacing: .06em; }
+
+/* CV entries: education and certificates */
+.entries { list-style: none; padding: 0; margin: 0; }
+.entry { padding: 1.25rem 0; border-bottom: 1px solid var(--border); }
+.entry:first-child { padding-top: 0; }
+.entry:last-child { border-bottom: 0; padding-bottom: 0; }
+.entry-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .25rem 1.5rem; }
+.entry-title { font-size: 1.35rem; line-height: 1.25; }
+.entry-title--caps { font-size: 1.2rem; letter-spacing: .06em; }
+.entry-years { font: italic 400 1.2rem/1.3 var(--heading); color: var(--muted); }
+.entry-org { margin: .2rem 0 .4rem; }
+.entry-line { margin: 0 0 .15rem; color: var(--muted); max-width: 64ch; }
 
 /* project index */
 .index-list { list-style: none; padding: 0; margin: 0; }

@@ -8,12 +8,12 @@ site, English only.
 | Path | What it holds |
 |---|---|
 | `design/tokens.json` | Brand design tokens (colour, type, spacing). The single source of truth for brand values; nothing else hardcodes them. |
-| `content/` | The public export (`public-export/3`): `index.json`, note frontmatter, approved write-ups with their rendered `*.page.json`, and `assets/figures.{css,js}`. Added only through reviewed pull requests. |
+| `content/` | The public export (`public-export/4`): `index.json`, note frontmatter, approved write-ups with their rendered `*.page.json`, `assets/figures.{css,js}`, and the CV (`cv/cv.json` read from the `.docx`, and its PDF). Added only through reviewed pull requests. |
 | `src/lib/tokens.ts` | Turns `tokens.json` into CSS variables (light, dark, spacing, fonts) |
-| `src/lib/content.ts` | Reads `content/`; checks the export format; reads note frontmatter (tools, skills, findings) |
+| `src/lib/content.ts` | Reads `content/`; checks the export format; reads note frontmatter (tools, skills, findings) and the CV |
 | `src/lib/guilloche.ts` | The engraved rosette: polar sine bands shared by the hero canvas and the static seals |
-| `src/data/site.ts` | Site copy that is not in the export: navigation, contact channels, and the placeholder roles, projects and posts (each marked `placeholder: true`) |
-| `src/pages/` | Home, About, Work (experience), Projects (`/projects/<id>/` per write-up), Publications, Blog (`/blog/<id>/` for learning write-ups), Contact, favicon, 404. Old `/work/<id>/` links redirect to `/projects/<id>/` |
+| `src/data/site.ts` | Site copy that is not in the export: navigation, contact channels, and the placeholder roles, projects and posts (each marked `placeholder: true`). The CV replaces the placeholder roles, education, languages, email and LinkedIn when the export has one |
+| `src/pages/` | Home, About, Work (experience, education and certificates from the CV), Projects (`/projects/<id>/` per write-up), Publications, Blog (`/blog/<id>/` for learning write-ups), Contact, the CV PDF (`/cv/<name>.pdf`), favicon, 404. Old `/work/<id>/` links redirect to `/projects/<id>/` |
 | `src/styles/site.css` | Page styles, all in token variables. Figure styles ship with the export and are tuned at the end |
 | `public/fonts/` | Libre Bodoni, Jost and JetBrains Mono, variable woff2 (SIL OFL 1.1) |
 
