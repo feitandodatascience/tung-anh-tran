@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { publications } from '../lib/content';
+
+const AUTHOR = 'Tung Anh Tran';
+const LANGUAGES: Record<string, string> = { fr: 'French', vi: 'Vietnamese' };
+const month = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' });
+
+const items = publications();
+---
+
+<Base
+  title="Publications · Tung Anh Tran"
+  description="Published reports and articles by Tung Anh Tran"
+>
+  <header class="hero">
+    <p class="eyebrow">Publications</p>
+    <h1>Published work</h1>
+  </header>
+
+  {
+    items.length === 0 ? (
+      <p class="empty">No publications are listed yet.</p>
+    ) : (
+      <ol class="pubs">
+        {items.map(({ title, date, url, publication: pub }) => (
+          <li class="pub">
+            <h2 lang={pub.language}>{url ? <a href={url}>{title}</a> : title}</h2>
+            {pub.title_en && <p class="pub-en">{pub.title_en}</p>}
+            <p class="pub-authors">
+              {pub.authors.map((name, n) => (
+                <>
+                  {n > 0 && ', '}
+                  {name === AUTHOR ? <strong>{name}</strong> : name}
+                </>
+              ))}
+            </p>
+            <p class="pub-meta">
+              <cite>{pub.venue}</cite>
+              {pub.issue && ` n° ${pub.issue}`}
+              {pub.publisher && pub.publisher !== pub.venue && ` · ${pub.publisher}`}
+              {` · ${month.format(new Date(date))}`}
+              {pub.language && LANGUAGES[pub.language] && ` · in ${LANGUAGES[pub.language]}`}
+            </p>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</Base>

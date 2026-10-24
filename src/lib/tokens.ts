@@ -53,7 +53,7 @@ function fontFaces(): string {
     .join('\n');
 }
 
-/** Every token as CSS: light by default, dark by preference or data-theme. */
+/** Every token as CSS: always light, dark only when the visitor picks it (data-theme). */
 export const tokenCss = `${fontFaces()}
 :root {
 ${palette('light')}
@@ -63,10 +63,6 @@ ${scale()}
 --mono: ${'mono' in fonts ? fontStack('mono') : 'monospace'};
 color-scheme: light;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-${palette('dark')}
-color-scheme: dark;
-} }
 :root[data-theme="dark"] {
 ${palette('dark')}
 color-scheme: dark;

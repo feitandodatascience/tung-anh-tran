@@ -9,6 +9,11 @@ interface Props {
 
 const { title, description } = Astro.props;
 const year = new Date().getFullYear();
+const here = Astro.url.pathname;
+const nav = [
+  { href: '/#work', label: 'Work', current: here === '/' || here.startsWith('/work/') },
+  { href: '/publications/', label: 'Publications', current: here.startsWith('/publications') },
+];
 ---
 
 <!doctype html>
@@ -34,6 +39,15 @@ const year = new Date().getFullYear();
     <header class="site-header">
       <div class="wrap bar">
         <a class="wordmark" href="/">Tung Anh Tran</a>
+        <nav class="nav" aria-label="Main">
+          {
+            nav.map(({ href, label, current }) => (
+              <a href={href} aria-current={current ? 'page' : undefined}>
+                {label}
+              </a>
+            ))
+          }
+        </nav>
         <button class="toggle" type="button" id="theme" aria-label="Switch light or dark mode">
           Light / dark
         </button>
@@ -48,10 +62,7 @@ const year = new Date().getFullYear();
     <script is:inline>
       document.getElementById('theme').addEventListener('click', () => {
         const root = document.documentElement;
-        const dark =
-          root.dataset.theme === 'dark' ||
-          (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
-        root.dataset.theme = dark ? 'light' : 'dark';
+        root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
         try {
           localStorage.setItem('theme', root.dataset.theme);
         } catch {}

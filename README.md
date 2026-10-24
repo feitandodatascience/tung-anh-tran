@@ -8,10 +8,10 @@ site, English only.
 | Path | What it holds |
 |---|---|
 | `design/tokens.json` | Brand design tokens (colour, type, spacing). The single source of truth for brand values; nothing else hardcodes them. |
-| `content/` | The public export (`public-export/2`): `index.json`, note frontmatter, approved write-ups with their rendered `*.page.json`, and `assets/figures.{css,js}`. Added only through reviewed pull requests. |
+| `content/` | The public export (`public-export/3`): `index.json`, note frontmatter, approved write-ups with their rendered `*.page.json`, and `assets/figures.{css,js}`. Added only through reviewed pull requests. |
 | `src/lib/tokens.ts` | Turns `tokens.json` into CSS variables (light, dark, spacing, fonts) |
 | `src/lib/content.ts` | Reads `content/`; checks the export format |
-| `src/pages/` | Home (`/`), one page per write-up (`/work/<id>/`), favicon, 404 |
+| `src/pages/` | Home (`/`), one page per write-up (`/work/<id>/`), publications (`/publications/`), favicon, 404 |
 | `src/styles/site.css` | Page styles, all in token variables. Figure styles ship with the export |
 | `public/fonts/` | Glacial Indifference, Regular and Bold (SIL OFL 1.1) |
 

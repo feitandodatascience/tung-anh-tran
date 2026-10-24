@@ -4,17 +4,29 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const FORMAT = 'public-export/2';
+// Format 3 adds publications to format 2, so a format-2 export still reads correctly.
+const FORMATS = ['public-export/2', 'public-export/3'];
 const ROOT = path.resolve(process.env.FEITAN_CONTENT_DIR || 'content');
+
+export interface Citation {
+  authors: string[];
+  venue: string;
+  issue?: string | null;
+  publisher?: string | null;
+  language?: string;
+  title_en?: string | null;
+}
 
 export interface Entry {
   id: string;
-  type: 'project' | 'competition' | 'learning';
+  type: 'project' | 'competition' | 'learning' | 'publication';
   title: string;
   date: string;
   path: string;
   writeup?: string;
   page?: string;
+  publication?: Citation;
+  url?: string | null;
 }
 
 export interface Stat {
@@ -42,8 +54,10 @@ function read(rel: string): string {
 export function entries(): Entry[] {
   if (!fs.existsSync(path.join(ROOT, 'index.json'))) return [];
   const index = JSON.parse(read('index.json'));
-  if (index.format !== FORMAT) {
-    throw new Error(`${ROOT}/index.json is "${index.format}", expected "${FORMAT}"`);
+  if (!FORMATS.includes(index.format)) {
+    throw new Error(
+      `${ROOT}/index.json is "${index.format}", expected one of ${FORMATS.join(', ')}`,
+    );
   }
   return index.notes as Entry[];
 }
@@ -54,6 +68,13 @@ export function pages(): { entry: Entry; page: Page }[] {
     .filter((entry) => entry.page)
     .map((entry) => ({ entry, page: JSON.parse(read(entry.page!)) as Page }))
     .sort((a, b) => b.entry.date.localeCompare(a.entry.date));
+}
+
+/** Every publication with its citation, newest first. */
+export function publications(): (Entry & { publication: Citation })[] {
+  return entries()
+    .filter((entry): entry is Entry & { publication: Citation } => !!entry.publication)
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
 
 /** Shared figure CSS or JS from the export (empty if there is no export yet). */
