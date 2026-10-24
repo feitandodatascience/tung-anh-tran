@@ -1,0 +1,204 @@
+{
+  "source": "drivendata-dat-parkinsons-challenge",
+  "eyebrow": "Competition · DrivenData · 2026",
+  "stats": [
+    {
+      "value": "0.9455",
+      "label": "OOF AUROC, final model",
+      "note": "5-fold stratified, n = 1,362"
+    },
+    {
+      "value": "0.0187",
+      "label": "Calibration error (ECE)",
+      "note": "CNN ensemble, out of fold"
+    },
+    {
+      "value": "+0.0006",
+      "label": "Calibration penalty, unseen acquisition family",
+      "note": "Leave-one-family-out, baseline"
+    },
+    {
+      "value": "#159 / 1009",
+      "label": "Final private rank",
+      "note": "Top 16%"
+    }
+  ],
+  "figures": {
+    "pipeline": {
+      "type": "pipeline",
+      "title": "Model architecture: two views of each scan, stacked into one calibrated probability",
+      "caption": "All metrics are 5-fold stratified out-of-fold (OOF) on n = 1,362. AUROC: how well the model ranks abnormal above normal scans (1 = perfect). ECE: expected calibration error, the average gap between predicted probability and observed rate (0 = perfect).",
+      "stages": [
+        {
+          "label": "1 · Data",
+          "out": "3D volume, varying shape and spacing",
+          "boxes": [
+            {
+              "label": "DaT-SPECT brain scans",
+              "detail": "Labelled normal or abnormal",
+              "specs": [
+                "n = 1,362 (747 abnormal, 615 normal)",
+                "10 French hospitals",
+                "21 acquisition families",
+                "FOV 176–630 mm per axis"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "2 · Preprocess",
+          "out": "1 × 96³ tensor",
+          "boxes": [
+            {
+              "label": "Standardise",
+              "detail": "Same geometry and intensity scale for every scan",
+              "specs": [
+                "Reorient to RAS",
+                "Resample to 2.0 mm isotropic",
+                "Centre-of-mass crop 96 × 96 × 96",
+                "Reference-region intensity normalisation"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "3 · Two models in parallel",
+          "grow": 1.9,
+          "out": "2 logits per scan",
+          "boxes": [
+            {
+              "label": "3D ResNet ensemble",
+              "detail": "10 CNNs: 2 training runs × 5 stratified folds",
+              "specs": [
+                "GroupNorm, widths 16/32/64/128, dropout 0.3",
+                "AdamW lr 3e-4, cosine, 30 epochs, early stopping",
+                "Run 2 augmentation: elastic, PSF blur, signed gamma, count noise, mixup",
+                "No left–right flip: asymmetry is signal",
+                "TTA: 9 laterality-preserving views, logit mean"
+              ],
+              "metrics": [
+                {
+                  "name": "AUROC",
+                  "value": "0.9393"
+                },
+                {
+                  "name": "ECE",
+                  "value": "0.0187"
+                },
+                {
+                  "name": "log loss",
+                  "value": "0.3021"
+                }
+              ]
+            },
+            {
+              "label": "Striatal features → LightGBM",
+              "detail": "157 hand-built SBR-style striatal features",
+              "specs": [
+                "Logit correlation with the CNN ensemble ρ = 0.821"
+              ],
+              "metrics": [
+                {
+                  "name": "AUROC",
+                  "value": "0.9184"
+                },
+                {
+                  "name": "ECE",
+                  "value": "0.0329"
+                },
+                {
+                  "name": "log loss",
+                  "value": "0.3659"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "4 · Combine",
+          "out": "p(abnormal)",
+          "boxes": [
+            {
+              "label": "Logistic stack",
+              "detail": "3 parameters, scored by cross-validation",
+              "specs": [
+                "CNN +0.694, trees +0.364, intercept +0.048",
+                "Carries the calibration: no separate temperature",
+                "Clip to [1e-6, 1 − 1e-6]"
+              ]
+            }
+          ]
+        },
+        {
+          "label": "5 · Output",
+          "boxes": [
+            {
+              "label": "Probability the scan is abnormal",
+              "detail": "Final model (candidate B), out of fold",
+              "metrics": [
+                {
+                  "name": "AUROC",
+                  "value": "0.9455"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "quality": {
+      "type": "dotplot",
+      "title": "Baseline model: strong ranking on most acquisition families, weakest on the small 128 @ 1.5 mm family",
+      "caption": "Run 1 baseline, stratified OOF, so every family was seen in training. Families are named as recorded: 21 in total, the 6 with n ≥ 30 shown and the rest pooled. Per-family results for the final model are not recorded.",
+      "metric": "AUROC",
+      "better": "higher",
+      "domain": [
+        0.8,
+        1.0
+      ],
+      "digits": 4,
+      "reference": {
+        "value": 0.9302,
+        "label": "All scans, baseline"
+      },
+      "rows": [
+        {
+          "label": "256 @ 2.5 mm",
+          "sub": "n = 460 · ECE 0.0509",
+          "value": 0.9176
+        },
+        {
+          "label": "128 @ 3.9 mm",
+          "sub": "n = 325 · ECE 0.0544",
+          "value": 0.9277
+        },
+        {
+          "label": "128 @ 2.3 mm",
+          "sub": "n = 207 · ECE 0.0397",
+          "value": 0.9396
+        },
+        {
+          "label": "128 @ 2.4 mm",
+          "sub": "n = 149 · ECE 0.0407",
+          "value": 0.956
+        },
+        {
+          "label": "Small families, pooled",
+          "sub": "n = 125 · ECE 0.0676",
+          "value": 0.9097
+        },
+        {
+          "label": "var @ 2.5 mm",
+          "sub": "n = 66 · ECE 0.0930",
+          "value": 0.9463
+        },
+        {
+          "label": "128 @ 1.5 mm",
+          "sub": "n = 30 · ECE 0.1552",
+          "value": 0.8373,
+          "highlight": true
+        }
+      ]
+    }
+  }
+}
