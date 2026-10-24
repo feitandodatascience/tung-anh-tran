@@ -1,8 +1,8 @@
 ---
+import HexPortrait from '../components/HexPortrait.astro';
 import Placeholder from '../components/Placeholder.astro';
 import Base from '../layouts/Base.astro';
 import { LANGUAGES, POSITIONING, TAGLINE } from '../data/site';
-import { rosettePaths, type Band } from '../lib/guilloche';
 import { cvSection, href, projectPages, toolkit } from '../lib/content';
 
 const { tools, skills } = toolkit();
@@ -25,13 +25,6 @@ const principles = [
     text: 'A weaker model that is wrong on different cases can add more than a stronger copy of what is already there. The tree model, weaker alone, carried a third of the final stack.',
   },
 ];
-
-// An oval cameo: the engraved ring stretched upright, around the monogram.
-const RING: Band[] = [
-  { radius: 0.9, amp: 0.035, waves: 22, copies: 6 },
-  { radius: 0.78, amp: 0.05, waves: 11, copies: 8 },
-];
-const ring = rosettePaths(200, RING, 420);
 ---
 
 <Base title="About · Tung Anh Tran" description={TAGLINE}>
@@ -40,17 +33,7 @@ const ring = rosettePaths(200, RING, 420);
       <h1 class="page-title">About</h1>
       <p class="page-lede">{POSITIONING}</p>
     </div>
-    <figure class="cameo">
-      <svg viewBox="0 0 200 250" role="img" aria-label="Monogram TA in an engraved oval frame">
-        <g transform="scale(1 1.25)">
-          {ring.map(({ d }) => <path d={d} fill="none" stroke="currentColor" stroke-width="0.5" vector-effect="non-scaling-stroke" opacity="0.7" />)}
-          <ellipse cx="100" cy="100" rx="64" ry="64" fill="none" stroke="currentColor" stroke-width="0.8" vector-effect="non-scaling-stroke" />
-          <ellipse cx="100" cy="100" rx="99" ry="99" fill="none" stroke="currentColor" stroke-width="0.8" vector-effect="non-scaling-stroke" />
-        </g>
-        <text x="100" y="125" dy="0.35em" text-anchor="middle" fill="currentColor" font-size="64" class="seal-text">TA</text>
-      </svg>
-      <figcaption>Portrait to come <Placeholder /></figcaption>
-    </figure>
+    <HexPortrait />
   </header>
 
   <div class="wrap">
