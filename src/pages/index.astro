@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { pages, plainSummary } from '../lib/content';
+
+const work = pages();
+---
+
+<Base
+  title="Tung Anh Tran · Data scientist"
+  description="Data scientist · ML classification and computer vision · healthcare and education"
+>
+  <header class="hero">
+    <p class="eyebrow">Data scientist</p>
+    <h1>Tung Anh Tran</h1>
+    <p class="lede">
+      I'm Tung Anh Tran, a data scientist building machine learning models for
+      classification and computer vision on large, complex datasets. Most of my work is
+      in healthcare and education, and I'm open to problems in other industries.
+    </p>
+  </header>
+
+  <section aria-labelledby="work">
+    <h2 id="work" class="section-title">Work</h2>
+    {
+      work.length === 0 ? (
+        <p class="empty">No write-ups are published yet.</p>
+      ) : (
+        <ul class="cards">
+          {work.map(({ entry, page }) => (
+            <li class="card">
+              {page.eyebrow && <p class="eyebrow">{page.eyebrow}</p>}
+              <h3>
+                <a href={`/work/${entry.id}/`}>{page.title}</a>
+              </h3>
+              <p set:html={plainSummary(page.summary_html)} />
+              {page.stats[0] && (
+                <p class="card-stat">
+                  <span class="card-stat-v">{page.stats[0].value}</span>
+                  <span class="card-stat-l">{page.stats[0].label}</span>
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</Base>
