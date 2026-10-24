@@ -1,0 +1,247 @@
+{
+  "email": "dinhtunganh.tran@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/dinh-tung-anh-tran/",
+  "updated": "2026-07-29",
+  "sections": [
+    {
+      "title": "Summary",
+      "paragraphs": [
+        "Data Scientist and applied researcher with experience in statistical modelling, machine learning, and large-scale health and administrative data analysis within national statistics and clinical research institutions. My work has focused on causal inference, longitudinal data analysis, and reproducible data science for public health applications. I am interested in developing statistical and machine learning methods for population health, clinical decision support, and real-world healthcare data."
+      ],
+      "items": [],
+      "entries": []
+    },
+    {
+      "title": "Research interests",
+      "paragraphs": [
+        "My research interests include causal inference, interrupted time series analysis, implementation science, and machine learning for healthcare. I am particularly interested in developing trustworthy AI methods, including locally fine-tuned large language models (LLMs), to support clinical decision-making, population health, and the analysis of real-world healthcare data."
+      ],
+      "items": [],
+      "entries": []
+    },
+    {
+      "title": "Skills",
+      "paragraphs": [],
+      "items": [
+        {
+          "label": "Programming & Data Science",
+          "text": "Python (Pandas, Numpy, Scikit-learn, PyTorch), PySpark, R (tidyverse), SQL, SAS."
+        },
+        {
+          "label": "Statistical & ML Methods",
+          "text": "Regression modeling, causal inference (Oaxaca–Blinder), classification, time-series forecasting, feature engineering, model evaluation, optimisation."
+        },
+        {
+          "label": "Deep Learning",
+          "text": "CNN architecture design and tuning, image preprocessing, regularisation, hyperparameter tuning."
+        },
+        {
+          "label": "Research Data Management",
+          "text": "Data validation, quality assurance, reproducible workflows, documentation."
+        },
+        {
+          "label": "Cloud & MLOps",
+          "text": "Microsoft Azure (Data Factory, AutoML), Microsoft Fabric (Delta Lake, Dataflows), GCP."
+        },
+        {
+          "label": "Data Visualisation & BI",
+          "text": "RMarkdown, Power BI (DAX, Power Query), Tableau."
+        }
+      ],
+      "entries": []
+    },
+    {
+      "title": "Work Experience",
+      "paragraphs": [],
+      "items": [],
+      "entries": [
+        {
+          "title": "DATA SCIENTIST",
+          "org": [
+            "OUCRU (Oxford University Clinical Research Unit)",
+            "VN"
+          ],
+          "dates": "2025 - 2026",
+          "lines": [
+            "Responsible for integrated AMS dashboard development and data workflow optimization."
+          ],
+          "points": [
+            {
+              "label": "Dashboard Engineering & Data Integration",
+              "text": "Developed and maintained the integrated data platform and analytical framework for a 30-page antimicrobial stewardship dashboard used to monitor key stewardship indicators across hospital departments. Integrated four independently developed components into a unified reporting system, ensuring data quality, reproducible workflows, semantic model consistency, and deployment readiness across multiple hospital sites."
+            }
+          ]
+        },
+        {
+          "title": "DATA SCIENTIST",
+          "org": [
+            "INSEE (National Institute of Statistics and Economic Studies)",
+            "FR"
+          ],
+          "dates": "2022 - 2023",
+          "lines": [
+            "Responsible for annual salary database production and research on wage gaps in France."
+          ],
+          "points": [
+            {
+              "label": "Statistical Modeling and Data Analysis",
+              "text": "Produced and published an official national analysis of public–private wage differentials in France using Oaxaca–Blinder regression on a 40M-record annual salary database, quantifying structural and unexplained components of wage gaps."
+            },
+            {
+              "label": "ETL Pipeline Development",
+              "text": "Designed, implemented, and maintained robust ETL pipelines to standardise occupational data across 1.5M+ records, reducing redundancy by 17% and significantly improving data quality and interoperability across systems."
+            },
+            {
+              "label": "Data Validation",
+              "text": "Investigated and resolved anomalies arising from complex data collection processes, ensuring accuracy, consistency, and reproducibility of official statistics."
+            },
+            {
+              "label": "Reporting",
+              "text": "Analyzed wage dynamics during the COVID-19 period, identifying structural shifts through longitudinal data analysis. Redesigned and presented annual reports on key French wage statistics using RMarkdown."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Education",
+      "paragraphs": [],
+      "items": [],
+      "entries": [
+        {
+          "title": "MASTER OF DATA SCIENCE",
+          "org": [
+            "Paris 1 Panthéon-Sorbonne University"
+          ],
+          "dates": "2023",
+          "lines": [
+            "Majors: Applied Data science in business",
+            "Graduated as Valedictorian | GPA: 15.68 / 20",
+            "Thesis: Public and Private sector Pay gap in France - Statistical modeling of large administrative datasets | Grade: 17/20"
+          ],
+          "points": []
+        },
+        {
+          "title": "BACHELOR OF ECONOMICS AND MANAGEMENT",
+          "org": [
+            "Évry Paris-Saclay University"
+          ],
+          "dates": "2021",
+          "lines": [
+            "Majors: Economics",
+            "Graduated with honor | GPA: 14.93 / 20"
+          ],
+          "points": []
+        }
+      ]
+    },
+    {
+      "title": "Publications",
+      "paragraphs": [
+        "Godet, F. & Tran, T. A. (2025).",
+        "For the same annual volume of work, average net wage in the civil service was 3.7% lower than in the private sector. Insee Première, No. 2043, INSEE (French National Institute of Statistics and Economic Studies), 20 March 2025."
+      ],
+      "items": [],
+      "entries": []
+    },
+    {
+      "title": "Selected Portfolio Projects",
+      "paragraphs": [],
+      "items": [],
+      "entries": [
+        {
+          "title": "DIGIT RECOGNIZER: MNIST COMPUTER VISION COMPETITION",
+          "org": [
+            "Kaggle"
+          ],
+          "dates": "2025",
+          "lines": [],
+          "points": [
+            {
+              "label": null,
+              "text": "Built and iteratively optimised a CNN model to classify handwritten digits from the MNIST dataset. Applied deep learning techniques including image preprocessing, data augmentation, dropout regularisation, and model evaluation. The final model achieved 99.9% accuracy, ranking in the top 2.5% of the leaderboard as of June 2025."
+            }
+          ]
+        },
+        {
+          "title": "ROHLIK: TIME SERIES ORDER FORECASTING",
+          "org": [
+            "Personal Project",
+            "Kaggle"
+          ],
+          "dates": "2024",
+          "lines": [],
+          "points": [
+            {
+              "label": null,
+              "text": "Built a custom time series forecasting model using XGBoost with expanding window validation to predict daily warehouse orders, achieving less than 5% MAPE. Engineered time-based and holiday-related features, applied Optuna for hyperparameter tuning to ensure robust performance."
+            }
+          ]
+        },
+        {
+          "title": "PREDICTIVE CUSTOMER MODELING",
+          "org": [
+            "Personal Project"
+          ],
+          "dates": "2024",
+          "lines": [],
+          "points": [
+            {
+              "label": null,
+              "text": "Developed a classification model to predict customer response likelihood to a marketing campaign, achieving a 90% ROC-AUC score, and performed precision-recall analysis to evaluate conversion potential. Optimised the final model for profitability, enabling marketing strategies that improved ROI through prediction-driven decision thresholds."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Certifications",
+      "paragraphs": [],
+      "items": [],
+      "entries": [
+        {
+          "title": "MICROSOFT AZURE DATA SCIENTIST",
+          "org": [
+            "Microsoft DP-100"
+          ],
+          "dates": "2024",
+          "lines": [
+            "Design, create, manage Azure ML projects; train, monitor, hyper-tune, deploy ML models to batch and online endpoints."
+          ],
+          "points": []
+        },
+        {
+          "title": "MICROSOFT POWER BI DATA ANALYST",
+          "org": [
+            "Microsoft PL-300"
+          ],
+          "dates": "2020",
+          "lines": [
+            "Transform, load data in Power BI; create semantic models and DAX measures; build custom dashboards and reports."
+          ],
+          "points": []
+        }
+      ]
+    },
+    {
+      "title": "Languages",
+      "paragraphs": [],
+      "items": [
+        {
+          "label": "Vietnamese",
+          "text": "Native"
+        },
+        {
+          "label": "English",
+          "text": "Fluent (TOEIC 965/990 – C1 level, expired 2024)"
+        },
+        {
+          "label": "French",
+          "text": "Professional working proficiency"
+        }
+      ],
+      "entries": []
+    }
+  ],
+  "pdf": "cv/tung-anh-tran-cv.pdf"
+}
