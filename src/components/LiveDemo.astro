@@ -1,0 +1,32 @@
+---
+// A project's live app (the note's `links.demo`), embedded under the write-up's header.
+// The frame loads lazily; Streamlit Community Cloud apps get its embed mode, which
+// drops the hosting toolbar.
+interface Props {
+  url: string;
+  title: string;
+}
+
+const { url, title } = Astro.props;
+const src = new URL(url);
+const streamlit = src.hostname.endsWith('.streamlit.app');
+if (streamlit) src.searchParams.set('embed', 'true');
+---
+
+<section class="live" aria-labelledby="live-title">
+  <div class="live-head">
+    <div>
+      <h2 class="live-title" id="live-title">Live dashboard</h2>
+      <p class="live-note">
+        {
+          streamlit
+            ? 'The running app, hosted on Streamlit Community Cloud. If it has gone to sleep, wake it with the button inside the frame.'
+            : 'The running app.'
+        }
+      </p>
+    </div>
+    <a class="more" href={url} target="_blank" rel="noopener">Open in a new tab ↗</a>
+  </div>
+  <iframe class="live-frame" src={src.href} title={`Live dashboard: ${title}`} loading="lazy"
+  ></iframe>
+</section>

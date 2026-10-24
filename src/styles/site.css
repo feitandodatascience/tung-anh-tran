@@ -510,6 +510,18 @@ ul.tags li {
   .stat + .stat { border-top: 1px solid var(--border); }
 }
 
+.live { margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+.live-head {
+  display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
+  gap: .75rem 2rem; margin-bottom: 1rem;
+}
+.live-title { font: italic 400 clamp(1.5rem, 2.4vw, 1.9rem)/1.2 var(--heading); color: var(--primary); margin: 0 0 .35rem; }
+.live-note { color: var(--muted); font-size: .95rem; max-width: 62ch; margin: 0; }
+.live-frame {
+  display: block; width: 100%; height: clamp(36rem, 85vh, 54rem); border: 1px solid var(--border);
+  border-top: 3px solid var(--accent); background: var(--surface);
+}
+
 .writeup-grid {
   display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 4rem;
   padding-block: clamp(3rem, 6vw, 4.5rem) var(--section-gap-min);
