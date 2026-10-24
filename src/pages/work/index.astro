@@ -1,0 +1,74 @@
+---
+import Placeholder from '../../components/Placeholder.astro';
+import Base from '../../layouts/Base.astro';
+import { EDUCATION, EXPERIENCE } from '../../data/site';
+---
+
+<Base
+  title="Work · Tung Anh Tran"
+  description="Roles and experience of Tung Anh Tran, data scientist."
+>
+  <header class="wrap page-head">
+    <h1 class="page-title">Work</h1>
+    <p class="page-lede">Roles, teams and what each one shipped, most recent first.</p>
+  </header>
+
+  <div class="wrap">
+    <section class="ledger" aria-labelledby="roles">
+      <h2 class="ledger-label" id="roles">Experience</h2>
+      <div class="ledger-body">
+        <ol class="timeline">
+          {
+            EXPERIENCE.map((role) => (
+              <li class:list={["role", { "role--placeholder": role.placeholder }]}>
+                <p class="role-years">
+                  {role.start} to {role.end}
+                  {role.placeholder && <Placeholder />}
+                </p>
+                <h3 class="role-title">{role.title}</h3>
+                <p class="role-org">
+                  {role.org}, {role.place}
+                </p>
+                <p class="prose">{role.summary}</p>
+                <ul>
+                  {role.points.map((point) => (
+                    <li>{point}</li>
+                  ))}
+                </ul>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="study">
+      <h2 class="ledger-label" id="study">Education</h2>
+      <div class="ledger-body">
+        <dl class="facts">
+          {
+            EDUCATION.map((item) => (
+              <div>
+                <dt>
+                  {item.degree}, {item.school} {item.placeholder && <Placeholder />}
+                </dt>
+                <dd>{item.years}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </section>
+
+    <section class="ledger" aria-labelledby="cv">
+      <h2 class="ledger-label" id="cv">CV</h2>
+      <div class="ledger-body">
+        <p class="prose">A printable CV will be available here.</p>
+        <p class="actions">
+          <a class="button button--outline" aria-disabled="true">Download CV (PDF)</a>
+          <Placeholder />
+        </p>
+      </div>
+    </section>
+  </div>
+</Base>

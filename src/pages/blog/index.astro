@@ -1,0 +1,47 @@
+---
+import Placeholder from '../../components/Placeholder.astro';
+import Base from '../../layouts/Base.astro';
+import { POST_PLACEHOLDERS } from '../../data/site';
+import { href, plainSummary, postPages } from '../../lib/content';
+import { monthYear } from '../../lib/format';
+
+const posts = postPages();
+---
+
+<Base
+  title="Blog · Tung Anh Tran"
+  description="Notes by Tung Anh Tran on modelling, validation and what went wrong along the way."
+>
+  <header class="wrap page-head">
+    <h1 class="page-title">Blog</h1>
+    <p class="page-lede">Notes on modelling, validation and what went wrong along the way.</p>
+  </header>
+
+  <div class="wrap">
+    <ul class="posts posts--page">
+      {
+        posts.map(({ entry, page }) => (
+          <li class="post">
+            <h2 class="post-title">
+              <a href={href(entry)}>{page.title}</a>
+            </h2>
+            <p class="post-text" set:html={plainSummary(page.summary_html)} />
+            <p class="post-meta">{monthYear(entry.date)}</p>
+          </li>
+        ))
+      }
+      {
+        POST_PLACEHOLDERS.map((slot) => (
+          <li class="post post--placeholder">
+            <h2 class="post-title">{slot.title}</h2>
+            <p class="post-text">{slot.summary}</p>
+            <p class="post-meta">
+              {slot.month}, {slot.minutes} min read <Placeholder />
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  <div class="wrap page-gap"></div>
+</Base>

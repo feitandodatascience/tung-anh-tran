@@ -35,21 +35,34 @@ function scale(): string {
   ].join('\n');
 }
 
-/** Font faces for the self-hosted body family (files in public/fonts/). */
-const FONT_FILES: Record<number, string> = {
-  400: '/fonts/GlacialIndifference-Regular.woff',
-  700: '/fonts/GlacialIndifference-Bold.woff',
+/** Self-hosted files per font role (public/fonts/). Variable fonts cover every weight. */
+const FONT_FILES: Record<string, { file: string; style: 'normal' | 'italic' }[]> = {
+  heading: [
+    { file: '/fonts/LibreBodoni-Variable.woff2', style: 'normal' },
+    { file: '/fonts/LibreBodoni-Variable-Italic.woff2', style: 'italic' },
+  ],
+  body: [
+    { file: '/fonts/Jost-Variable.woff2', style: 'normal' },
+    { file: '/fonts/Jost-Variable-Italic.woff2', style: 'italic' },
+  ],
+  mono: [{ file: '/fonts/JetBrainsMono-Regular.woff2', style: 'normal' }],
 };
 
+/** Files worth preloading: the upright display and text faces seen above the fold. */
+export const preloadFonts = [FONT_FILES.heading[0].file, FONT_FILES.body[0].file];
+
 function fontFaces(): string {
-  const { family, weights = [] } = fonts.body;
-  return weights
-    .filter((w) => w in FONT_FILES)
-    .map(
-      (w) =>
-        `@font-face{font-family:'${family}';font-weight:${w};font-display:swap;` +
-        `src:url('${FONT_FILES[w]}') format('woff');}`,
-    )
+  return Object.entries(FONT_FILES)
+    .filter(([role]) => role in fonts)
+    .flatMap(([role, files]) => {
+      const { family } = fonts[role];
+      const range = { heading: '400 700', body: '100 900' }[role] ?? '400';
+      return files.map(
+        ({ file, style }) =>
+          `@font-face{font-family:'${family}';font-style:${style};font-weight:${range};` +
+          `font-display:swap;src:url('${file}') format('woff2');}`,
+      );
+    })
     .join('\n');
 }
 

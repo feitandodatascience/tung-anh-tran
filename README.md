@@ -10,10 +10,12 @@ site, English only.
 | `design/tokens.json` | Brand design tokens (colour, type, spacing). The single source of truth for brand values; nothing else hardcodes them. |
 | `content/` | The public export (`public-export/3`): `index.json`, note frontmatter, approved write-ups with their rendered `*.page.json`, and `assets/figures.{css,js}`. Added only through reviewed pull requests. |
 | `src/lib/tokens.ts` | Turns `tokens.json` into CSS variables (light, dark, spacing, fonts) |
-| `src/lib/content.ts` | Reads `content/`; checks the export format |
-| `src/pages/` | Home (`/`), one page per write-up (`/work/<id>/`), publications (`/publications/`), favicon, 404 |
-| `src/styles/site.css` | Page styles, all in token variables. Figure styles ship with the export |
-| `public/fonts/` | Glacial Indifference, Regular and Bold (SIL OFL 1.1) |
+| `src/lib/content.ts` | Reads `content/`; checks the export format; reads note frontmatter (tools, skills, findings) |
+| `src/lib/guilloche.ts` | The engraved rosette: polar sine bands shared by the hero canvas and the static seals |
+| `src/data/site.ts` | Site copy that is not in the export: navigation, contact channels, and the placeholder roles, projects and posts (each marked `placeholder: true`) |
+| `src/pages/` | Home, About, Work (experience), Projects (`/projects/<id>/` per write-up), Publications, Blog (`/blog/<id>/` for learning write-ups), Contact, favicon, 404. Old `/work/<id>/` links redirect to `/projects/<id>/` |
+| `src/styles/site.css` | Page styles, all in token variables. Figure styles ship with the export and are tuned at the end |
+| `public/fonts/` | Libre Bodoni, Jost and JetBrains Mono, variable woff2 (SIL OFL 1.1) |
 
 ## Develop
 
@@ -38,6 +40,11 @@ write-up preview in `feitan-agents`), so what was approved is what the site show
 
 ## Brand
 
-"Clay & Olive": espresso ink on a sand ground, one clay-orange signal, olive for links.
-Type is Glacial Indifference (SIL OFL 1.1) in Regular and Bold. General Sans is the
-fallback for dense dashboards and is not bundled here.
+"Regent": deep regent green on a cool pearl ground, with one thread of antique gold
+(the `accent` on light grounds, `glint` on the deep bands). Display type is Libre Bodoni,
+a sturdy Didone; text is Jost. The home hero is a guilloché rosette, the engraved line
+work of banknotes and certificates, drawn on a canvas: it draws itself in once, then its
+bands turn slowly and swell around the pointer. Reduced motion gets a still drawing.
+
+Placeholders are visible on purpose and carry a dashed "Placeholder" badge. Replace them
+in `src/data/site.ts`; real projects, posts and publications come from the export.

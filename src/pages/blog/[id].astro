@@ -1,0 +1,12 @@
+---
+import Writeup from '../../components/Writeup.astro';
+import { postPages, type Page } from '../../lib/content';
+
+export function getStaticPaths() {
+  return postPages().map(({ entry, page }) => ({ params: { id: entry.id }, props: { page } }));
+}
+
+const { page } = Astro.props as { page: Page };
+---
+
+<Writeup page={page} back={{ href: '/blog/', label: 'All posts' }} />

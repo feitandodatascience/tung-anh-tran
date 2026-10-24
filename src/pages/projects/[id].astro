@@ -1,0 +1,12 @@
+---
+import Writeup from '../../components/Writeup.astro';
+import { projectPages, type Page } from '../../lib/content';
+
+export function getStaticPaths() {
+  return projectPages().map(({ entry, page }) => ({ params: { id: entry.id }, props: { page } }));
+}
+
+const { page } = Astro.props as { page: Page };
+---
+
+<Writeup page={page} back={{ href: '/projects/', label: 'All projects' }} />
