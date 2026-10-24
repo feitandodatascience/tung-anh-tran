@@ -1,0 +1,14 @@
+{
+  "format": "public-export/2",
+  "notes": [
+    {
+      "date": "2026-09-01",
+      "id": "drivendata-dat-parkinsons-challenge",
+      "page": "writeups/drivendata-dat-parkinsons-challenge.page.json",
+      "path": "competitions/drivendata-dat-parkinsons-challenge.md",
+      "title": "DaT Parkinson's Challenge (DrivenData): 3D DaT-SPECT normal vs abnormal",
+      "type": "competition",
+      "writeup": "writeups/drivendata-dat-parkinsons-challenge.md"
+    }
+  ]
+}
