@@ -1,0 +1,283 @@
+---
+// The hero portrait, engraved row by row under a gilt scan line, the way a vision model
+// reads an image, while an identity score climbs to its verdict. It plays once when the
+// hero is first seen; clicking the portrait plays it again. Reduced motion gets the
+// finished plate, still. The score is scripted: it always settles on 88.96%.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['portrait-scan', className]} aria-hidden="true">
+  <canvas data-portrait-scan></canvas>
+</div>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-portrait-scan]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SCAN = 4200;
+    // p(Tung Anh) as the scan reaches each height of the photo.
+    const BELIEF = [[0, .1], [.22, .13], [.3, .29], [.36, .55], [.42, .72], [.54, .84], [.75, .87], [1, .8896]];
+    const MONO = '"JetBrains Mono", ui-monospace, monospace';
+
+    const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+    const smooth = (a: number, b: number, x: number) => {
+      const t = clamp((x - a) / (b - a));
+      return t * t * (3 - 2 * t);
+    };
+    const belief = (v: number) => {
+      for (let i = 1; i < BELIEF.length; i++) {
+        const [b, pb] = BELIEF[i];
+        if (v <= b) {
+          const [a, pa] = BELIEF[i - 1];
+          return pa + (pb - pa) * smooth(a, b, v);
+        }
+      }
+      return BELIEF[BELIEF.length - 1][1];
+    };
+
+    const colours = { deep: '', line: '', muted: '', glint: '' };
+    const readColours = () => {
+      const css = getComputedStyle(canvas);
+      colours.deep = css.getPropertyValue('--deep').trim();
+      colours.line = css.getPropertyValue('--on-deep').trim();
+      colours.muted = css.getPropertyValue('--on-deep-muted').trim();
+      colours.glint = css.getPropertyValue('--glint').trim();
+    };
+    const glow = (alpha: number) => {
+      const h = colours.glint.replace('#', '');
+      const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    // The photo as luminance, 0 to 1.
+    let lum: Float32Array | null = null;
+    let pw = 0;
+    let ph = 0;
+    const lumAt = (u: number, v: number) =>
+      !lum || u < 0 || v < 0 || u >= 1 || v >= 1 ? 0 : lum[((v * ph) | 0) * pw + ((u * pw) | 0)];
+
+    type Row = { y0: number; xs: Float32Array; ys: Float32Array; ts: Float32Array; ls: Float32Array };
+    let rows: Row[] = [];
+    let n = 0;
+    let g = 4;
+    let k = 1;
+    let ox = 0;
+    let oy = 0;
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let top = new Float32Array(0);
+    let bot = new Float32Array(0);
+
+    // Engraved rows: line weight follows the light; light areas lift a little, as if embossed.
+    const layout = () => {
+      w = canvas.clientWidth;
+      h = canvas.clientHeight;
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      if (!lum || !w || !h) return;
+      // The portrait fills the height against the right edge, centred when narrow.
+      k = h / ph;
+      if (pw * k > w) k = w / pw;
+      ox = (w - pw * k) * (w < 460 ? 0.5 : 1);
+      oy = h - ph * k;
+      g = clamp(h / 165, 3, 5.2);
+      const step = 2;
+      const x0 = Math.max(0, ox);
+      const x1 = Math.min(w, ox + pw * k);
+      n = Math.ceil((x1 - x0) / step) + 1;
+      top = new Float32Array(n);
+      bot = new Float32Array(n);
+      rows = [];
+      for (let y0 = g / 2; y0 < h + g; y0 += g) {
+        const xs = new Float32Array(n);
+        const ys = new Float32Array(n);
+        const ts = new Float32Array(n);
+        const ls = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          const x = Math.min(x1, x0 + i * step);
+          const u = (x - ox) / (pw * k);
+          let y = y0 + g * 0.45 * Math.sin(u * Math.PI * 3 + y0 * 0.012);
+          const v = (y - oy) / (ph * k);
+          // Fades in from the left, and stays clear of the navigation along the top.
+          const L = smooth(0.05, 0.9, lumAt(u, v)) * smooth(0, 0.3, u) * smooth(1, 0.96, u) * smooth(0.035, 0.15, v);
+          y -= (L - 0.5) * g * 0.35;
+          xs[i] = x;
+          ys[i] = y;
+          ts[i] = g * 0.8 * Math.pow(L, 0.9);
+          ls[i] = L;
+        }
+        rows.push({ y0, xs, ys, ts, ls });
+      }
+    };
+
+    const draw = (t: number) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      if (!rows.length) return false;
+      const band = g * 3;
+      const p = clamp(t / SCAN);
+      const sy = p * (h + band);
+      const done = p >= 1;
+      const x0 = Math.max(0, ox);
+      const x1 = Math.min(w, ox + pw * k);
+
+      // Rows the scan has passed are engraved; a band at its front is still raw pixels.
+      ctx.fillStyle = colours.line;
+      ctx.globalAlpha = 0.95;
+      ctx.beginPath();
+      for (const row of rows) {
+        if (row.y0 >= sy - band) continue;
+        for (let i = 0; i < n; i++) {
+          top[i] = row.ys[i] - row.ts[i] / 2;
+          bot[i] = row.ys[i] + row.ts[i] / 2;
+        }
+        ctx.moveTo(row.xs[0], top[0]);
+        for (let i = 1; i < n; i++) ctx.lineTo(row.xs[i], top[i]);
+        for (let i = n - 1; i >= 0; i--) ctx.lineTo(row.xs[i], bot[i]);
+        ctx.closePath();
+      }
+      ctx.fill();
+      if (!done) {
+        const per = Math.max(1, Math.round(g / 2));
+        for (const row of rows) {
+          if (row.y0 < sy - band || row.y0 >= sy) continue;
+          for (let i = 0; i < n; i += per) {
+            if (row.ls[i] < 0.04) continue;
+            ctx.globalAlpha = 0.9 * row.ls[i];
+            ctx.fillRect(row.xs[i], row.y0 - g / 2, g - 0.6, g - 0.6);
+          }
+        }
+        const y = Math.min(sy, h - 1);
+        const gradient = ctx.createLinearGradient(0, y - 30, 0, y);
+        gradient.addColorStop(0, glow(0));
+        gradient.addColorStop(1, glow(0.16));
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x0, y - 30, x1 - x0, 30);
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = colours.glint;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
+        ctx.stroke();
+      }
+
+      // The identity read-out: the score climbs as the scan sees more of the face. Phones
+      // get a compact version in the top-left corner, clear of the face.
+      const seen = clamp((sy - band - oy) / (ph * k));
+      const score = done ? 0.8896 : clamp(belief(seen) + (Math.sin(t / 53) + Math.sin(t / 29)) * 0.004 * (1 - p));
+      const flash = done ? 1 - clamp((t - SCAN) / 700) : 0;
+      const compact = w < 420;
+      const bw = compact ? 172 : 192;
+      const bh = compact ? 48 : 82;
+      const px = compact ? 14 : w - bw - 14;
+      const py = compact ? Math.max(h * 0.11, 60) : Math.max(h * 0.11, 76);
+      ctx.globalAlpha = 0.86;
+      ctx.fillStyle = colours.deep;
+      ctx.fillRect(px, py, bw, bh);
+      ctx.globalAlpha = 0.22 + 0.6 * flash;
+      ctx.strokeStyle = flash > 0 ? colours.glint : colours.line;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px + 0.5, py + 0.5, bw - 1, bh - 1);
+      const classes: [string, number, string][] = compact
+        ? [['Tung Anh', score, colours.glint]]
+        : [
+            ['Tung Anh', score, colours.glint],
+            ['other', 1 - score, colours.line],
+          ];
+      if (!compact) {
+        ctx.font = `10px ${MONO}`;
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = colours.muted;
+        ctx.fillText('identity', px + 12, py + 17);
+      }
+      classes.forEach(([name, v, colour], i) => {
+        const y = py + (compact ? 19 : 37) + i * 17;
+        ctx.font = `11px ${MONO}`;
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = colours.line;
+        ctx.fillText(name, px + 12, y);
+        ctx.textAlign = 'right';
+        ctx.fillText(`${(v * 100).toFixed(2)}%`, px + bw - 12, y);
+        ctx.textAlign = 'left';
+        if (compact) return;
+        ctx.globalAlpha = 0.25;
+        ctx.fillRect(px + 84, y - 4, 44, 2);
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = colour;
+        ctx.fillRect(px + 84, y - 4, 44 * v, 2);
+      });
+      ctx.font = `10px ${MONO}`;
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = done ? colours.glint : colours.muted;
+      ctx.fillText(done ? "prediction: it's Tung Anh" : `row ${Math.round(seen * ph)} of ${ph}`, px + 12, py + bh - 10);
+      ctx.globalAlpha = 1;
+      return !done || t < SCAN + 800;
+    };
+
+    let start = 0;
+    let frame = 0;
+    let begun = false;
+    const elapsed = () => (still ? Infinity : performance.now() - start);
+    const loop = () => {
+      frame = draw(elapsed()) ? requestAnimationFrame(loop) : 0;
+    };
+    const play = () => {
+      start = performance.now();
+      if (!frame) frame = requestAnimationFrame(loop);
+    };
+    // Repaints between frames (resize, fonts, theme), but never ahead of the first play.
+    const redraw = () => {
+      if (!frame && (begun || still)) draw(elapsed());
+    };
+
+    readColours();
+    const photo = new Image();
+    photo.src = '/portrait.jpg';
+    photo.decode().then(() => {
+      pw = photo.naturalWidth;
+      ph = photo.naturalHeight;
+      const off = document.createElement('canvas');
+      off.width = pw;
+      off.height = ph;
+      const octx = off.getContext('2d');
+      if (!octx) return;
+      octx.drawImage(photo, 0, 0);
+      const data = octx.getImageData(0, 0, pw, ph).data;
+      lum = new Float32Array(pw * ph);
+      for (let i = 0; i < lum.length; i++) lum[i] = data[i * 4] / 255;
+      layout();
+      // Play once, the first time the hero is in view.
+      new IntersectionObserver((entries, observer) => {
+        if (!entries[0].isIntersecting || begun) return;
+        begun = true;
+        observer.disconnect();
+        play();
+      }, { threshold: 0.3 }).observe(canvas);
+    });
+
+    new ResizeObserver(() => {
+      layout();
+      redraw();
+    }).observe(canvas);
+    document.fonts?.load(`10px ${MONO}`).then(redraw);
+
+    // The theme toggle changes the tokens; repaint with the new colours.
+    new MutationObserver(() => {
+      readColours();
+      redraw();
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    canvas.addEventListener('click', () => {
+      if (begun && !still) play();
+    });
+  }
+</script>
