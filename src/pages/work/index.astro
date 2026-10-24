@@ -2,11 +2,29 @@
 import Placeholder from '../../components/Placeholder.astro';
 import Base from '../../layouts/Base.astro';
 import { EDUCATION, EXPERIENCE } from '../../data/site';
+import { cv, cvSection } from '../../lib/content';
+
+// Everything below comes from the CV when the export has one; the placeholders in
+// data/site.ts only stand in until then.
+const data = cv();
+const roles = cvSection('experience')?.entries;
+const study = cvSection('education')?.entries;
+const certificates = cvSection('certification')?.entries;
+const pdfHref = data && `/${data.pdf}`;
+
+const years = (dates: string) => dates.replace(/\s+[-–]\s+/, ' to ');
+const caps = (title: string) => title === title.toUpperCase();
+const month = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 ---
 
 <Base
   title="Work · Tung Anh Tran"
-  description="Roles and experience of Tung Anh Tran, data scientist."
+  description="Roles, education and certificates of Tung Anh Tran, data scientist."
 >
   <header class="wrap page-head">
     <h1 class="page-title">Work</h1>
@@ -19,24 +37,46 @@ import { EDUCATION, EXPERIENCE } from '../../data/site';
       <div class="ledger-body">
         <ol class="timeline">
           {
-            EXPERIENCE.map((role) => (
-              <li class:list={["role", { "role--placeholder": role.placeholder }]}>
-                <p class="role-years">
-                  {role.start} to {role.end}
-                  {role.placeholder && <Placeholder />}
-                </p>
-                <h3 class="role-title">{role.title}</h3>
-                <p class="role-org">
-                  {role.org}, {role.place}
-                </p>
-                <p class="prose">{role.summary}</p>
-                <ul>
-                  {role.points.map((point) => (
-                    <li>{point}</li>
-                  ))}
-                </ul>
-              </li>
-            ))
+            roles
+              ? roles.map((role) => (
+                  <li class="role">
+                    <p class="role-years">{years(role.dates)}</p>
+                    <h3 class:list={['role-title', { 'role-title--caps': caps(role.title) }]}>
+                      {role.title}
+                    </h3>
+                    <p class="role-org">{role.org.join(', ')}</p>
+                    {role.lines.map((line) => (
+                      <p class="prose">{line}</p>
+                    ))}
+                    {role.points.length > 0 && (
+                      <ul>
+                        {role.points.map((point) => (
+                          <li>
+                            {point.label && <strong>{point.label}:</strong>} {point.text}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))
+              : EXPERIENCE.map((role) => (
+                  <li class="role role--placeholder">
+                    <p class="role-years">
+                      {role.start} to {role.end}
+                      <Placeholder />
+                    </p>
+                    <h3 class="role-title">{role.title}</h3>
+                    <p class="role-org">
+                      {role.org}, {role.place}
+                    </p>
+                    <p class="prose">{role.summary}</p>
+                    <ul>
+                      {role.points.map((point) => (
+                        <li>{point}</li>
+                      ))}
+                    </ul>
+                  </li>
+                ))
           }
         </ol>
       </div>
@@ -45,29 +85,93 @@ import { EDUCATION, EXPERIENCE } from '../../data/site';
     <section class="ledger" aria-labelledby="study">
       <h2 class="ledger-label" id="study">Education</h2>
       <div class="ledger-body">
-        <dl class="facts">
-          {
-            EDUCATION.map((item) => (
-              <div>
-                <dt>
-                  {item.degree}, {item.school} {item.placeholder && <Placeholder />}
-                </dt>
-                <dd>{item.years}</dd>
-              </div>
-            ))
-          }
-        </dl>
+        {
+          study ? (
+            <ol class="entries">
+              {study.map((item) => (
+                <li class="entry">
+                  <div class="entry-head">
+                    <h3 class:list={['entry-title', { 'entry-title--caps': caps(item.title) }]}>
+                      {item.title}
+                    </h3>
+                    <span class="entry-years">{years(item.dates)}</span>
+                  </div>
+                  {item.org.length > 0 && <p class="entry-org">{item.org.join(', ')}</p>}
+                  {item.lines.map((line) => (
+                    <p class="entry-line">{line}</p>
+                  ))}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <dl class="facts">
+              {EDUCATION.map((item) => (
+                <div>
+                  <dt>
+                    {item.degree}, {item.school} <Placeholder />
+                  </dt>
+                  <dd>{item.years}</dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
       </div>
     </section>
+
+    {
+      certificates && (
+        <section class="ledger" aria-labelledby="certificates">
+          <h2 class="ledger-label" id="certificates">Certificates</h2>
+          <div class="ledger-body">
+            <ol class="entries">
+              {certificates.map((item) => (
+                <li class="entry">
+                  <div class="entry-head">
+                    <h3 class:list={['entry-title', { 'entry-title--caps': caps(item.title) }]}>
+                      {item.title}
+                    </h3>
+                    <span class="entry-years">{years(item.dates)}</span>
+                  </div>
+                  {item.org.length > 0 && <p class="entry-org">{item.org.join(', ')}</p>}
+                  {item.lines.map((line) => (
+                    <p class="entry-line">{line}</p>
+                  ))}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )
+    }
 
     <section class="ledger" aria-labelledby="cv">
       <h2 class="ledger-label" id="cv">CV</h2>
       <div class="ledger-body">
-        <p class="prose">A printable CV will be available here.</p>
-        <p class="actions">
-          <a class="button button--outline" aria-disabled="true">Download CV (PDF)</a>
-          <Placeholder />
-        </p>
+        {
+          data ? (
+            <>
+              <p class="prose">
+                The full CV as a PDF{data.updated && `, last updated ${month(data.updated)}`}.
+              </p>
+              <p class="actions">
+                <a class="button button--outline" href={pdfHref} download="Tung-Anh-Tran-CV.pdf">
+                  Download CV (PDF)
+                </a>
+              </p>
+            </>
+          ) : (
+            <>
+              <p class="prose">A printable CV will be available here.</p>
+              <p class="actions">
+                <a class="button button--outline" aria-disabled="true">
+                  Download CV (PDF)
+                </a>
+                <Placeholder />
+              </p>
+            </>
+          )
+        }
       </div>
     </section>
   </div>

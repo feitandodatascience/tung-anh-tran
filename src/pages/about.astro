@@ -3,9 +3,10 @@ import Placeholder from '../components/Placeholder.astro';
 import Base from '../layouts/Base.astro';
 import { LANGUAGES, POSITIONING, TAGLINE } from '../data/site';
 import { rosettePaths, type Band } from '../lib/guilloche';
-import { href, projectPages, toolkit } from '../lib/content';
+import { cvSection, href, projectPages, toolkit } from '../lib/content';
 
 const { tools, skills } = toolkit();
+const languages = cvSection('language')?.items;
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // Lessons the approved DaT write-up records, restated as working habits.
@@ -118,14 +119,21 @@ const ring = rosettePaths(200, RING, 420);
             <dd>City, country <Placeholder /></dd>
           </div>
           {
-            LANGUAGES.map((lang) => (
-              <div>
-                <dt>Languages</dt>
-                <dd>
-                  {lang.name} {lang.placeholder && <Placeholder />}
-                </dd>
-              </div>
-            ))
+            languages
+              ? languages.map((lang) => (
+                  <div>
+                    <dt>{lang.label ?? 'Language'}</dt>
+                    <dd>{lang.text}</dd>
+                  </div>
+                ))
+              : LANGUAGES.map((lang) => (
+                  <div>
+                    <dt>Languages</dt>
+                    <dd>
+                      {lang.name} {lang.placeholder && <Placeholder />}
+                    </dd>
+                  </div>
+                ))
           }
           <div>
             <dt>Experience and education</dt>

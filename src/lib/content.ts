@@ -5,8 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parse } from 'yaml';
 
-// Format 3 adds publications to format 2, so a format-2 export still reads correctly.
-const FORMATS = ['public-export/2', 'public-export/3'];
+// Format 3 adds publications to format 2 and format 4 adds the CV, so older exports
+// still read correctly.
+const FORMATS = ['public-export/2', 'public-export/3', 'public-export/4'];
 const ROOT = path.resolve(process.env.FEITAN_CONTENT_DIR || 'content');
 
 export interface Citation {
@@ -67,19 +68,78 @@ export interface Page {
   sources: string[];
 }
 
+/** A bullet of the CV, with its bold lead if it has one. */
+export interface CvPoint {
+  label: string | null;
+  text: string;
+}
+
+/** A role, degree or certificate: its line (title, organisation, dates), then the rest. */
+export interface CvEntry {
+  title: string;
+  org: string[];
+  dates: string;
+  lines: string[];
+  points: CvPoint[];
+}
+
+export interface CvSection {
+  title: string;
+  paragraphs: string[];
+  items: CvPoint[];
+  entries: CvEntry[];
+}
+
+/** The CV as the export reads it from the .docx (pending items already left out). */
+export interface Cv {
+  email: string | null;
+  linkedin: string | null;
+  updated: string | null;
+  pdf: string;
+  sections: CvSection[];
+}
+
+interface Index {
+  format: string;
+  notes: Entry[];
+  cv?: { data: string; pdf: string };
+}
+
 function read(rel: string): string {
   return fs.readFileSync(path.join(ROOT, rel), 'utf8');
 }
 
-export function entries(): Entry[] {
-  if (!fs.existsSync(path.join(ROOT, 'index.json'))) return [];
+function index(): Index | null {
+  if (!fs.existsSync(path.join(ROOT, 'index.json'))) return null;
   const index = JSON.parse(read('index.json'));
   if (!FORMATS.includes(index.format)) {
     throw new Error(
       `${ROOT}/index.json is "${index.format}", expected one of ${FORMATS.join(', ')}`,
     );
   }
-  return index.notes as Entry[];
+  return index as Index;
+}
+
+export function entries(): Entry[] {
+  return index()?.notes ?? [];
+}
+
+/** The CV, or null when the export has none. */
+export function cv(): Cv | null {
+  const file = index()?.cv?.data;
+  return file ? (JSON.parse(read(file)) as Cv) : null;
+}
+
+/** The CV section whose heading contains `word` ("experience", "education", ...). */
+export function cvSection(word: string): CvSection | undefined {
+  return cv()?.sections.find((s) => s.title.toLowerCase().includes(word));
+}
+
+/** The CV's PDF: its file name (served at /cv/<name>) and bytes. */
+export function cvPdf(): { name: string; bytes: Buffer } | null {
+  const file = index()?.cv?.pdf;
+  if (!file) return null;
+  return { name: path.basename(file), bytes: fs.readFileSync(path.join(ROOT, file)) };
 }
 
 /** Every write-up page, newest note first. */

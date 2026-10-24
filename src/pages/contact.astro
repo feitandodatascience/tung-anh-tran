@@ -1,7 +1,21 @@
 ---
 import Placeholder from '../components/Placeholder.astro';
 import Base from '../layouts/Base.astro';
-import { CHANNELS, OPEN_TO } from '../data/site';
+import { CHANNELS, OPEN_TO, type Channel } from '../data/site';
+import { cv } from '../lib/content';
+
+// Email and LinkedIn come from the CV when the export has one.
+const data = cv();
+const channels: Channel[] = CHANNELS.map((c) => {
+  if (c.label === 'Email' && data?.email) {
+    return { label: c.label, value: data.email, href: `mailto:${data.email}` };
+  }
+  if (c.label === 'LinkedIn' && data?.linkedin) {
+    const handle = new URL(data.linkedin).pathname.replace(/^\/|\/$/g, '');
+    return { label: c.label, value: handle, href: data.linkedin };
+  }
+  return c;
+});
 ---
 
 <Base
@@ -16,7 +30,7 @@ import { CHANNELS, OPEN_TO } from '../data/site';
   <div class="wrap contact-grid">
     <ul class="channels">
       {
-        CHANNELS.map((c) => (
+        channels.map((c) => (
           <li class:list={['channel', { 'channel--placeholder': c.placeholder }]}>
             <span class="channel-label">{c.label}</span>
             <span class="channel-value">
