@@ -1,50 +1,37 @@
-# Reading Tracker: log privately, publish the habit safely
+# Reading Tracker: two buttons and a dashboard for my reading habit
 
-**Summary:** A small personal data product in Python. A private Streamlit tracker writes validated reading sessions to SQLite, an export keeps notes and exact times on my machine, and a public dashboard shows habit, pace and a baseline finish-date estimate. 206 tests cover 94.75% of the code [reading-tracker].
+**Summary:** A hobby app for my own reading. Two buttons log each reading session, and a public dashboard turns the sessions into streaks, pace and an estimate of when I will finish my current book [reading-tracker].
 
-**Headline metric:** 94.75% line coverage from 206 passing tests on v1.0.0 [reading-tracker]
+**Headline metric:** First version built in 1 day, with Claude Code [reading-tracker]
 
-**Tags:** data product · data validation · privacy · dashboard
+**Tags:** hobby · reading · dashboard
 
-**Approved:** 2026-10-24
+**Approved:** 2026-10-25
 
 ---
 
-## Problem
+## Why I made it
 
-I read in English and Vietnamese, mostly paper books. I wanted to know how much I really read, at what pace, and when I will finish the current book. A habit tracker only works if logging is quick, so the first rule was that recording a session should take seconds. The second was that the dashboard could be public while the raw diary stays private.
+I read in English and Vietnamese, mostly paper books. I wanted to know how much I really read, how fast, and when I will finish the book I am holding. A habit tracker only works if logging is quick, so the whole tracker is built around one Start button and one Stop button [reading-tracker].
 
-The data is my own: one row per book and one per reading session, with start and end time and pages. Until my history is imported, the dashboard runs on a seeded demo history of 15 books and 180 sessions over 182 days, labelled as demo data [reading-tracker].
+## What it does
 
-## Approach
+- **A private tracker.** It runs only on my computer. I press Start when I open a book and Stop when I close it, and it remembers the page where I stopped.
+- **A public dashboard.** It shows the current book with an estimated finish range, reading streaks, weekly reading time against a goal, and how pace changes from one kind of book to another. You can try it on this page. For now it shows made-up demo data, clearly labelled [reading-tracker].
+- **My diary stays private.** My notes and exact clock times never leave my computer. For each session, the public side sees only the hour it started and how long it lasted [reading-tracker].
 
-<!-- figure:pipeline -->
+## How I built it
 
-- **Validate where the data is born.** Only one session can be open. Sessions cannot overlap or end in the future, and page positions must sit inside the book. Bad rows never reach the analysis. These rules carry 109 of the 206 tests [reading-tracker].
-- **Store events, derive the rest.** SQLite holds only books and sessions. Pace, streaks and progress are computed in pandas each time, so fixing a rule changes every past number consistently.
-- **Private by construction.** The export drops notes and end times and floors start times to the hour. It keeps each session's duration, because rounding both ends would turn a 20:10 to 20:40 session into zero minutes [reading-tracker].
-- **A baseline before a model.** The finish date is two plain ratios: pages left over recent median pace, over recent minutes per day. The range comes from the slower and faster quartiles of pace, so anyone can check it by hand.
+It started from a written plan: what the app must do, what data it keeps, and what must stay private. From that plan I built it with Claude Code and had the first version working in a day. Since then I have released two updates: one gave the dashboard the same look as this site, and one stopped its charts from zooming by accident when you drag or swipe. Automated tests run on every change I push, and each update passed them [reading-tracker].
 
-## Result
+## What's next
 
-<!-- figure:quality -->
-
-Version 1.0.0 works end to end: tracker, export, demo data and dashboard, with ruff and pytest running in CI on every push [reading-tracker]. 206 tests pass and cover 94.75% of the code. Line coverage is the share of code statements that the tests actually run. The rules that guard the data are fully covered, and click-through tests drive both apps the way I use them [reading-tracker].
-
-The gap is the Windows double-click launcher, at 50.0%. The untested half starts the server in the background and opens the browser. The finish-date estimate has no accuracy figure yet: measuring it needs my real history and a backtest, which is the next step [reading-tracker].
-
-## What I learned
-
-- **Friction decides the data.** The tracker is built around one Start and one Stop button, prefilled with the last page. Everything else hides in expanders.
-- **Privacy rules interact.** Hiding exact times by rounding both ends would have destroyed durations. Publishing the start hour plus the duration keeps pace honest while hiding the clock.
-
-## Tools
-
-Python, uv, SQLite, pandas, Streamlit, Plotly, pytest, ruff, GitHub Actions, Claude Code.
+Next I will import my real reading history, so the dashboard shows my own habit instead of demo data. After that, I want to write my own way of predicting when I will finish a book, and test it on my past reading [reading-tracker].
 
 ## Links
 
-- Code repository: https://github.com/feitandodatascience/reading-tracker
+- Live dashboard, on demo data: https://tung-anh-reading.streamlit.app
+- Code on GitHub: https://github.com/feitandodatascience/reading-tracker
 
 ## Sources
 
