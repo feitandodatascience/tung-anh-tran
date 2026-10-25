@@ -2,14 +2,15 @@
 // One approved write-up, laid out from its rendered page parts (export *.page.json).
 import Base from '../layouts/Base.astro';
 import LiveDemo from './LiveDemo.astro';
+import type { Poster } from '../data/site';
 import { asset, plainSummary, titleOf, type Page } from '../lib/content';
 import { slug } from '../lib/format';
 
 interface Props {
   page: Page;
   back: { href: string; label: string };
-  /** The note's live app (`links.demo`), embedded under the header when set. */
-  demo?: string | null;
+  /** The note's live app (`links.demo`), shown under the header when set. */
+  demo?: { id: string; url: string; poster?: Poster } | null;
 }
 
 const { page, back, demo } = Astro.props;
@@ -55,7 +56,7 @@ const meta = page.eyebrow.split(' · ').join(', ');
   {
     demo && (
       <div class="wrap">
-        <LiveDemo url={demo} title={page.title} />
+        <LiveDemo {...demo} title={page.title} />
       </div>
     )
   }

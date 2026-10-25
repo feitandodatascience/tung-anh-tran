@@ -1,15 +1,20 @@
 ---
 import Writeup from '../../components/Writeup.astro';
+import { DEMO_POSTERS, type Poster } from '../../data/site';
 import { note, projectPages, type Page } from '../../lib/content';
 
 export function getStaticPaths() {
-  return projectPages().map(({ entry, page }) => ({
-    params: { id: entry.id },
-    props: { page, demo: note(entry).links.demo },
-  }));
+  return projectPages().map(({ entry, page }) => {
+    const url = note(entry).links.demo;
+    const demo = url ? { id: entry.id, url, poster: DEMO_POSTERS[entry.id] } : null;
+    return { params: { id: entry.id }, props: { page, demo } };
+  });
 }
 
-const { page, demo } = Astro.props as { page: Page; demo?: string | null };
+const { page, demo } = Astro.props as {
+  page: Page;
+  demo: { id: string; url: string; poster?: Poster } | null;
+};
 ---
 
 <Writeup page={page} demo={demo} back={{ href: '/projects/', label: 'All projects' }} />

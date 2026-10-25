@@ -107,6 +107,18 @@ export const LANGUAGES = [{ name: 'Languages to come', level: '', placeholder: t
  */
 export const FEATURED_PROJECT = 'drivendata-dat-parkinsons-challenge';
 
+/** A still of a project's live app, shown until the visitor loads the app itself. */
+export interface Poster {
+  src: string;
+  width: number;
+  height: number;
+}
+
+/** Stills of live apps (files in public/demos/), by note id. */
+export const DEMO_POSTERS: Record<string, Poster> = {
+  'reading-tracker': { src: '/demos/reading-tracker.webp', width: 1568, height: 726 },
+};
+
 export interface Teaser {
   title: string;
   summary: string;
