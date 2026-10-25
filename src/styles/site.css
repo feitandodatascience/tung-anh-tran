@@ -510,6 +510,35 @@ ul.tags li {
   .stat + .stat { border-top: 1px solid var(--border); }
 }
 
+.live { margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+.live-head {
+  display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between;
+  gap: .75rem 2rem; margin-bottom: 1rem;
+}
+.live-title { font: italic 400 clamp(1.5rem, 2.4vw, 1.9rem)/1.2 var(--heading); color: var(--primary); margin: 0 0 .35rem; }
+.live-note { color: var(--muted); font-size: .95rem; max-width: 62ch; margin: 0; }
+/* Until the visitor asks, a still of the app with a button over it (LiveDemo.astro). */
+.live-stage {
+  position: relative; display: grid; place-items: center; width: 100%;
+  padding: 0; font: inherit; cursor: pointer; overflow: hidden;
+  border: 1px solid var(--border); border-top-color: var(--primary); background: var(--surface);
+}
+.live-stage:not(:has(.live-poster)) { min-height: 12rem; }
+.live-poster { grid-area: 1 / 1; width: 100%; height: auto; transition: opacity .25s; }
+.live-load {
+  grid-area: 1 / 1; position: relative; z-index: 1; /* above the still, even when it fades */
+  box-shadow: 0 0 0 .5rem color-mix(in srgb, var(--surface) 75%, transparent);
+}
+.live-stage:hover .live-poster { opacity: .82; }
+/* The app is light only; on the dark theme its still is toned down, not inverted. */
+:root[data-theme="dark"] .live-poster { filter: brightness(.86); }
+.live-stage:hover .live-load { background: var(--secondary); }
+/* The app: never taller than the screen, so a strip of page always stays swipeable. */
+.live-frame {
+  display: block; width: 100%; height: clamp(16rem, calc(100svh - 9rem), 54rem);
+  border: 1px solid var(--border); border-top-color: var(--primary); background: var(--surface);
+}
+
 .writeup-grid {
   display: grid; grid-template-columns: 12rem minmax(0, 1fr); gap: 4rem;
   padding-block: clamp(3rem, 6vw, 4.5rem) var(--section-gap-min);

@@ -1,0 +1,83 @@
+---
+// A project's live app (the note's `links.demo`), under the write-up's header. The app
+// is megabytes of third-party code with its own cookies and analytics, so nothing loads
+// until the visitor asks: a still of the app (DEMO_POSTERS in site.ts) and a button
+// stand in for it, and a few lines of script swap in the frame on click. Only https
+// apps on Streamlit Community Cloud are embedded; any other link is shown as a link.
+import type { Poster } from '../data/site';
+
+interface Props {
+  id: string;
+  url: string;
+  title: string;
+  poster?: Poster;
+}
+
+const { id, url, title, poster } = Astro.props;
+if (!URL.canParse(url)) throw new Error(`links.demo of note "${id}" is not a URL: ${url}`);
+const src = new URL(url);
+const embeddable = src.protocol === 'https:' && src.hostname.endsWith('.streamlit.app');
+if (embeddable) src.searchParams.set('embed', 'true');
+const what = embeddable ? 'dashboard' : 'demo';
+---
+
+<section class="live" aria-labelledby="live-title">
+  <div class="live-head">
+    <div>
+      <h2 class="live-title" id="live-title">Live {what}</h2>
+      {
+        embeddable && (
+          <p class="live-note">
+            The running app on Streamlit Community Cloud. It loads only when you ask,
+            because it brings Streamlit's own code, cookies and analytics. If it has gone to
+            sleep, wake it with the button inside the frame.
+          </p>
+        )
+      }
+    </div>
+    <a class="more" href={url} target="_blank" rel="noopener">
+      Open the {what} in a new tab<span aria-hidden="true"> ↗</span>
+    </a>
+  </div>
+  {
+    embeddable && (
+      <button
+        type="button"
+        class="live-stage"
+        data-src={src.href}
+        data-title={`Live dashboard: ${title}`}
+      >
+        {poster && (
+          <img
+            class="live-poster"
+            src={poster.src}
+            alt=""
+            width={poster.width}
+            height={poster.height}
+            loading="lazy"
+            decoding="async"
+          />
+        )}
+        <span class="button button--solid live-load">Load the live dashboard</span>
+      </button>
+    )
+  }
+</section>
+
+<script>
+  // Swap the still for the app only on request (see the comment at the top).
+  for (const stage of document.querySelectorAll<HTMLButtonElement>('.live-stage')) {
+    stage.addEventListener(
+      'click',
+      () => {
+        const frame = document.createElement('iframe');
+        frame.className = 'live-frame';
+        frame.src = stage.dataset.src ?? '';
+        frame.title = stage.dataset.title ?? '';
+        stage.replaceWith(frame);
+        frame.focus();
+      },
+      { once: true },
+    );
+  }
+</script>
