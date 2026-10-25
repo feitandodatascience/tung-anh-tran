@@ -1,42 +1,46 @@
-# Reading Tracker: log privately, publish the habit safely
+# Reading Tracker: a hobby project, built like a product
 
-**Summary:** A small personal data product in Python. A private Streamlit tracker writes validated reading sessions to SQLite, an export keeps notes and exact times on my machine, and a public dashboard shows habit, pace and a baseline finish-date estimate. 206 tests cover 94.75% of the code [reading-tracker].
+**Summary:** Two small Streamlit apps for my own reading: a private tracker with one Start and one Stop button, and a public dashboard of the habit, live on labelled demo data. I started with a written spec, built the first release with Claude Code in a day, and have shipped 3 releases, each passing CI [reading-tracker].
 
-**Headline metric:** 94.75% line coverage from 206 passing tests on v1.0.0 [reading-tracker]
+**Headline metric:** 1 day from the spec to v1.0.0, in 29 commits co-authored with Claude Code [reading-tracker]
 
-**Tags:** data product · data validation · privacy · dashboard
+**Tags:** hobby · data product · privacy · data validation · testing
 
-**Approved:** 2026-10-24
+**Approved:** 2026-10-25
 
 ---
 
-## Problem
+## Two apps, two audiences
 
-I read in English and Vietnamese, mostly paper books. I wanted to know how much I really read, at what pace, and when I will finish the current book. A habit tracker only works if logging is quick, so the first rule was that recording a session should take seconds. The second was that the dashboard could be public while the raw diary stays private.
+Reading Tracker is a hobby project for my own reading. I read in English and Vietnamese, mostly paper books, and wanted three answers: how much I really read, at what pace, and when I will finish the current book. The tracker is for me: a private Streamlit app on localhost only. One big Start and one big Stop button log a session, with the page where I stopped already filled in [reading-tracker].
 
-The data is my own: one row per book and one per reading session, with start and end time and pages. Until my history is imported, the dashboard runs on a seeded demo history of 15 books and 180 sessions over 182 days, labelled as demo data [reading-tracker].
+The dashboard is for visitors, with a finish-date range for the current book. It is live, but on a seeded demo history of 15 books and 180 sessions over 182 days, labelled "Demo data", because my real history is not imported yet. It is a hobby, but it covers the whole path of a data product, from a written spec to a live deployment [reading-tracker].
 
-## Approach
+## Design decisions
+
+- **Friction decides the data.** The spec's first goal is logging a session in under 10 seconds, because friction kills the habit and the data. So two big buttons come first, and everything else hides in expanders. It is a target; I have not timed it [reading-tracker].
+- **Private by construction.** The export drops notes and end times, floors start times to the hour and keeps each duration in whole seconds. Rounding both ends would turn a 20:10 to 20:40 session into 20:00 to 20:00: zero minutes. This way pace survives, and the clock shows only the hour [reading-tracker].
+- **Raw events, checked at the door.** SQLite stores only books and sessions, and rules refuse bad rows before saving. Everything else is derived in pandas, so a fixed rule changes every past number consistently [reading-tracker].
+- **A baseline before a model.** The finish date is two plain ratios over the last 28 days, with nothing learned. It has no accuracy figure yet: measuring one needs my real history and a backtest [reading-tracker].
+- **One brand, defined once.** The palette and fonts live in `brand.py`, mirrored in the Streamlit theme, and a test forbids hex codes anywhere else. Since v1.1.0 the dashboard wears my site's Regent brand, matching the page that embeds it [reading-tracker].
+
+## Under the hood
 
 <!-- figure:pipeline -->
 
-- **Validate where the data is born.** Only one session can be open. Sessions cannot overlap or end in the future, and page positions must sit inside the book. Bad rows never reach the analysis. These rules carry 109 of the 206 tests [reading-tracker].
-- **Store events, derive the rest.** SQLite holds only books and sessions. Pace, streaks and progress are computed in pandas each time, so fixing a rule changes every past number consistently.
-- **Private by construction.** The export drops notes and end times and floors start times to the hour. It keeps each session's duration, because rounding both ends would turn a 20:10 to 20:40 session into zero minutes [reading-tracker].
-- **A baseline before a model.** The finish date is two plain ratios: pages left over recent median pace, over recent minutes per day. The range comes from the slower and faster quartiles of pace, so anyone can check it by hand.
+The stack is small on purpose: my spec ruled out an ORM, a web framework and Docker. Text is stored in Unicode NFC, so Vietnamese diacritics typed on different keyboards group together. The demo history goes through the same validation as real data, so both sources on the public side pass the same rules [reading-tracker].
 
-## Result
+## Built, tested and shipped
+
+I started with the spec, not the code. The repo's first commit is its `CLAUDE.md`, with my goals, the stack limits, the data model and the privacy rules, plus the brand guide. Then I built the product with Claude Code, which co-authored every commit, and released v1.0.0 the same day, after 29 commits [reading-tracker].
 
 <!-- figure:quality -->
 
-Version 1.0.0 works end to end: tracker, export, demo data and dashboard, with ruff and pytest running in CI on every push [reading-tracker]. 206 tests pass and cover 94.75% of the code. Line coverage is the share of code statements that the tests actually run. The rules that guard the data are fully covered, and click-through tests drive both apps the way I use them [reading-tracker].
+On v1.1.1, 209 tests pass, and GitHub Actions runs them with ruff on every push. Click-through tests with Streamlit AppTest drive both apps. Each of the 3 releases is tagged and passed CI: v1.0.0, then v1.1.0 in the site's brand, then v1.1.1, whose charts no longer zoom on a drag or swipe. The dashboard has been live on Streamlit Community Cloud since 2026-10-25; this page shows a still of it and loads the live app only when you ask [reading-tracker].
 
-The gap is the Windows double-click launcher, at 50.0%. The untested half starts the server in the background and opens the browser. The finish-date estimate has no accuracy figure yet: measuring it needs my real history and a backtest, which is the next step [reading-tracker].
+## Roadmap
 
-## What I learned
-
-- **Friction decides the data.** The tracker is built around one Start and one Stop button, prefilled with the last page. Everything else hides in expanders.
-- **Privacy rules interact.** Hiding exact times by rounding both ends would have destroyed durations. Publishing the start hour plus the duration keeps pace honest while hiding the clock.
+Importing my reading history from Toggl comes first; until then, the dashboard stays on demo data. Then comes the spec's third goal: a Bayesian time-to-finish model with a backtest, which I will mostly write myself. That backtest is also what the baseline needs before its accuracy can be measured [reading-tracker].
 
 ## Tools
 
@@ -44,6 +48,7 @@ Python, uv, SQLite, pandas, Streamlit, Plotly, pytest, ruff, GitHub Actions, Cla
 
 ## Links
 
+- Live dashboard, on demo data: https://tung-anh-reading.streamlit.app
 - Code repository: https://github.com/feitandodatascience/reading-tracker
 
 ## Sources

@@ -1,28 +1,33 @@
 {
   "source": "reading-tracker",
-  "eyebrow": "Project · Python and Streamlit · 2026",
+  "eyebrow": "Hobby project · Python and Streamlit · 2026",
   "stats": [
     {
-      "value": "94.75%",
-      "label": "Line coverage",
-      "note": "849 of 896 statements, v1.0.0"
+      "value": "1 day",
+      "label": "From spec to v1.0.0",
+      "note": "29 commits, all co-authored with Claude Code"
     },
     {
-      "value": "206",
-      "label": "Tests passing",
-      "note": "Unit and click-through app tests, run in CI"
+      "value": "3",
+      "label": "Tagged releases",
+      "note": "v1.0.0 to v1.1.1, each passing CI"
     },
     {
       "value": "1 hour",
-      "label": "Finest public time detail",
-      "note": "Start times floored; notes and end times stay private"
+      "label": "Public time resolution",
+      "note": "Start times floored; notes and end times dropped"
+    },
+    {
+      "value": "209",
+      "label": "Tests passing",
+      "note": "Unit and click-through app tests on v1.1.1, run in CI"
     }
   ],
   "figures": {
     "pipeline": {
       "type": "pipeline",
-      "title": "From a button press to a public dashboard, with the private data kept at home",
-      "caption": "Stages 1 and 2 run on my computer only. The dashboard reads either the privacy-safe export or the synthetic demo history, never the raw database. Coverage: the share of a module's statements that the tests run.",
+      "title": "The privacy export is the only path from my private log to the public dashboard",
+      "caption": "Stages 1 and 2 run on my computer only. Stage 3 publishes my real data minus what is private, or a synthetic demo history. Until my history is imported, the live dashboard shows the demo.",
       "stages": [
         {
           "label": "1 · Capture",
@@ -30,45 +35,30 @@
           "boxes": [
             {
               "label": "Private tracker",
-              "detail": "Start and Stop buttons, prefilled with the last page",
+              "detail": "For me: one big Start and one big Stop button",
               "specs": [
                 "Streamlit, localhost only",
+                "Last page prefilled",
                 "Live timer",
-                "Past sessions entered by hand",
-                "Add, finish or abandon a book"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "96.71%"
-                }
+                "Past sessions and books in expanders"
               ]
             }
           ]
         },
         {
-          "label": "2 · Validate and store",
+          "label": "2 · Check and store",
           "out": "books + sessions, raw events only",
           "boxes": [
             {
               "label": "Rules, then SQLite",
-              "detail": "Bad rows are refused before they are saved",
+              "detail": "A bad row is refused before it is saved",
               "specs": [
                 "One active session at a time",
                 "No overlapping or future sessions",
                 "Positions within the book",
-                "ISO 8601 timestamps with UTC offset",
-                "Text in Unicode NFC"
-              ],
-              "metrics": [
-                {
-                  "name": "Tests",
-                  "value": "109"
-                },
-                {
-                  "name": "Coverage",
-                  "value": "100%"
-                }
+                "ISO 8601 times with UTC offset",
+                "Text in Unicode NFC",
+                "No ORM"
               ]
             }
           ]
@@ -80,34 +70,22 @@
           "boxes": [
             {
               "label": "Privacy export",
-              "detail": "My real data, only what is safe to show",
+              "detail": "My real data, minus what is private",
               "specs": [
-                "Notes dropped",
+                "Notes and end times dropped",
                 "Start times floored to the hour",
-                "End times dropped, duration kept",
+                "Duration kept in whole seconds",
                 "Active sessions left out"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "94.12%"
-                }
               ]
             },
             {
               "label": "Demo history",
-              "detail": "Synthetic, so anyone can run the dashboard",
+              "detail": "Synthetic, through the same validation",
               "specs": [
                 "Seed 10, 182 days",
                 "15 books, 180 sessions",
                 "English and Vietnamese",
-                "Same validation as real data"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "99.02%"
-                }
+                "Labelled “Demo data”"
               ]
             }
           ]
@@ -115,7 +93,7 @@
         {
           "label": "4 · Derive",
           "grow": 1.6,
-          "out": "pace, streaks, finish date",
+          "out": "pace, streaks, finish range",
           "boxes": [
             {
               "label": "Reading features",
@@ -123,52 +101,34 @@
               "specs": [
                 "Duration, pages, pages per minute",
                 "Daily minutes, current and longest streak",
-                "Midnight sessions count for their start date",
-                "Audiobooks left out of page pace"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "100%"
-                }
+                "A session over midnight counts for its start date",
+                "Audiobooks count for minutes, not page pace"
               ]
             },
             {
               "label": "Finish estimate",
-              "detail": "Baseline: two plain ratios, nothing learned",
+              "detail": "A baseline: two plain ratios, nothing learned",
               "specs": [
                 "Pages left ÷ median pace ÷ minutes per day",
-                "Last 28 days of reading",
+                "Window: the last 28 days",
                 "Range from 25th and 75th percentile pace"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "95.12%"
-                }
               ]
             }
           ]
         },
         {
           "label": "5 · Show",
-          "out": "public dashboard",
+          "out": "live on Streamlit Community Cloud",
           "boxes": [
             {
-              "label": "Dashboard",
-              "detail": "Streamlit and Plotly",
+              "label": "Public dashboard",
+              "detail": "For visitors: Streamlit and Plotly, in the site's brand",
               "specs": [
                 "Current book and finish range",
                 "Calendar heatmap and streaks",
                 "Weekly minutes against a goal",
                 "Pace by genre, format, language",
-                "Timeline of finished books"
-              ],
-              "metrics": [
-                {
-                  "name": "Coverage",
-                  "value": "94.87%"
-                }
+                "Timeline of finished and abandoned books"
               ]
             }
           ]
@@ -177,68 +137,68 @@
     },
     "quality": {
       "type": "dotplot",
-      "title": "The data rules are fully tested; the Windows launcher is the gap",
-      "caption": "Line coverage per module: the share of its statements that the 206 tests run, on v1.0.0. The launcher's untested half starts the server and opens the browser.",
+      "title": "The data rules have full coverage; the Windows launcher is the weak spot",
+      "caption": "Line coverage is the share of a part's statements that the tests run, measured with pytest-cov on v1.1.1; it is not part of CI. Rows follow the pipeline, then the shared parts. The dashed line is all code, 849 of 896 statements. The launcher's untested half starts the server in the background, waits for it and opens the browser.",
       "metric": "Line coverage, %",
       "better": "higher",
       "domain": [
         40,
         100
       ],
-      "digits": 1,
+      "digits": 2,
       "reference": {
         "value": 94.75,
         "label": "All code"
       },
       "rows": [
         {
-          "label": "Data rules (log.py)",
-          "sub": "109 tests · 173 statements",
-          "value": 100
-        },
-        {
-          "label": "Storage (db.py)",
-          "sub": "24 tests",
-          "value": 100
-        },
-        {
-          "label": "Reading features",
-          "sub": "19 tests",
-          "value": 100
-        },
-        {
-          "label": "Brand and charts",
-          "sub": "6 tests",
-          "value": 100
-        },
-        {
-          "label": "Demo history",
-          "sub": "11 tests, shared with the export",
-          "value": 99.02
-        },
-        {
-          "label": "Tracker app",
-          "sub": "22 click-through tests",
+          "label": "Private tracker",
+          "sub": "app/tracker.py · 22 click-through tests",
           "value": 96.71
         },
         {
-          "label": "Finish estimate",
-          "sub": "6 tests",
-          "value": 95.12
+          "label": "Data rules",
+          "sub": "log.py · 109 tests",
+          "value": 100
         },
         {
-          "label": "Dashboard app",
-          "sub": "5 click-through tests",
-          "value": 94.87
+          "label": "Storage",
+          "sub": "db.py · 24 tests",
+          "value": 100
         },
         {
           "label": "Privacy export",
-          "sub": "11 tests, shared with the demo",
+          "sub": "export.py · 11 tests, shared with the demo",
           "value": 94.12
         },
         {
+          "label": "Demo history",
+          "sub": "synthetic.py · the same 11 tests",
+          "value": 99.02
+        },
+        {
+          "label": "Reading features",
+          "sub": "features.py · 19 tests",
+          "value": 100
+        },
+        {
+          "label": "Finish estimate",
+          "sub": "eta.py · 6 tests",
+          "value": 95.12
+        },
+        {
+          "label": "Public dashboard",
+          "sub": "app/dashboard.py · 7 click-through tests",
+          "value": 94.9
+        },
+        {
+          "label": "Brand",
+          "sub": "brand.py · 7 tests",
+          "value": 100
+        },
+        {
           "label": "Windows launcher",
-          "sub": "4 tests · 50 statements",
+          "sub": "app/launcher.py · 4 tests",
           "value": 50.0,
           "highlight": true
         }
