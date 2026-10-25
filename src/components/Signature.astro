@@ -1,0 +1,24 @@
+---
+// The name in the script hand. With `swash`, a gilt brush stroke underlines it. With `write`,
+// the name writes itself left to right on a visitor's first page of the session.
+import { AUTHOR } from '../data/site';
+
+interface Props {
+  swash?: boolean;
+  write?: boolean;
+  class?: string;
+}
+
+const { swash = false, write = false, class: className } = Astro.props;
+---
+
+<span class:list={['signature', className]} data-signature-write={write ? '' : undefined}>
+  <span class="signature-ink">{AUTHOR}</span>
+  {
+    swash && (
+      <svg class="signature-swash" viewBox="0 0 300 24" aria-hidden="true">
+        <path d="M5 18 C 80 9, 200 5, 297 8 C 205 8.6, 90 13.5, 5 18 Z" />
+      </svg>
+    )
+  }
+</span>

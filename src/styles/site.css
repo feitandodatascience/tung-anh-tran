@@ -81,8 +81,30 @@ img, svg, canvas { display: block; max-width: 100%; }
   display: inline-flex; align-items: center; gap: .7rem;
   color: inherit; text-decoration: none;
 }
-.brand-name { font: 500 1.25rem/1 var(--heading); letter-spacing: 0; }
-.seal-text { font-family: var(--heading); font-weight: 600; }
+/* The handwritten name, underlined by a gold brush stroke: antique gold on pearl, gilt on
+   deep grounds. On the first page of a visit it writes itself left to right. */
+.signature {
+  --swash: var(--accent);
+  position: relative; display: inline-block; white-space: nowrap;
+  font: 400 2.2rem/1 var(--script); padding: .1em .15em .25em 0;
+}
+.site-header--deep .signature, .site-footer .signature, .menu-open .site-header .signature { --swash: var(--glint); }
+.signature-ink { display: inline-block; }
+.sig-write [data-signature-write] .signature-ink { animation: sig-write 1.6s cubic-bezier(.45, .05, .35, 1) .15s both; }
+.sig-write [data-signature-write] .signature-swash { animation: sig-swash .7s 1.5s ease-out both; }
+@keyframes sig-write {
+  from { clip-path: inset(-20% 100% -30% -5%); }
+  to { clip-path: inset(-20% -5% -30% -5%); }
+}
+@keyframes sig-swash {
+  from { clip-path: inset(-50% 100% -50% 0); }
+  to { clip-path: inset(-50% -5% -50% 0); }
+}
+/* Fine at both ends and fuller in the middle, like a nib, to match the hand's thick and thin. */
+.signature-swash {
+  position: absolute; left: 0; bottom: -.05em; width: 100%; height: auto;
+  overflow: visible; fill: var(--swash);
+}
 
 .nav { margin-left: auto; }
 .nav ul { list-style: none; display: flex; gap: clamp(1rem, 2.2vw, 2rem); margin: 0; padding: 0; }
@@ -124,7 +146,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 .menu-open .menu-lines::after { top: 3px; transform: rotate(-45deg); }
 
 @media (max-width: 60rem) {
-  .brand-name { font-size: 1.15rem; }
+  .brand .signature { font-size: 1.9rem; }
   .bar-tools { margin-left: auto; position: relative; z-index: 2; }
   .menu-button { display: inline-flex; }
   .brand { position: relative; z-index: 2; }
@@ -607,8 +629,8 @@ sup.cite a, .cite-key { color: var(--muted); text-decoration: none; font: .62em 
   border-top: 1px solid color-mix(in srgb, var(--on-deep) 12%, transparent);
 }
 .band + .site-footer .footer-grid { border-top-color: color-mix(in srgb, var(--on-deep) 12%, transparent); }
-.footer-mark .seal { color: var(--on-deep); margin-bottom: 1rem; }
-.footer-name { font: 500 1.6rem/1.2 var(--heading); color: var(--on-deep); margin-bottom: .35rem; }
+.footer-brand { margin: 0 0 1rem; color: var(--on-deep); }
+.footer-brand .signature { font-size: 2.6rem; }
 .footer-tagline { max-width: 32ch; }
 .footer-links { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 2rem; }
 .footer-links li { margin-bottom: .45rem; }
@@ -633,12 +655,15 @@ sup.cite a, .cite-key { color: var(--muted); text-decoration: none; font: .62em 
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  /* A shortened animation still waits out its delay, which would hide the name meanwhile. */
+  .sig-write [data-signature-write] .signature-ink,
+  .sig-write [data-signature-write] .signature-swash { animation: none; }
 }
 
 /* ------------------------------------------------------------------ odds and ends */
 
 .page-gap { height: var(--section-gap-min); }
-.not-found .seal { color: var(--primary); margin-bottom: 2rem; }
+.not-found .signature { font-size: 3.6rem; color: var(--primary); margin-bottom: 2rem; }
 .role-title { color: var(--primary); }
 .role-org, .role ul { color: var(--text); }
 .role--placeholder .role-title, .role--placeholder .role-org, .role--placeholder ul,
