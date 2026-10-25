@@ -1,12 +1,16 @@
-// The TA monogram in its ring, coloured from the tokens rather than hardcoded values.
-import { color, fontStack } from '../lib/tokens';
+// The script T from the signature, with its gilt stroke, on a deep disc. The glyph is the
+// Allura "T" outline (font units, y up), so the icon needs no font to draw. A stroke
+// of its own colour thickens the hairlines so they survive at 16 pixels.
+import { color } from '../lib/tokens';
+
+const T =
+  'M90 294Q75 298 56 310Q37 323 23 342Q9 362 9 386Q9 397 13 408Q13 409 14 415Q14 421 15 425Q26 475 66 508Q106 540 164 558Q222 576 285 580Q297 581 309 581Q321 581 333 581Q403 581 472 572Q541 563 598 554Q654 546 687 545Q715 574 728 577Q731 578 737 578Q748 578 757 572Q766 567 766 557Q766 548 758 540Q751 533 736 523Q721 513 707 498Q687 478 671 453Q655 428 655 405Q655 388 663 376Q665 374 665 372Q665 364 657 364Q650 364 642 372Q634 382 634 415Q634 435 638 458Q642 481 652 500Q656 507 664 516Q671 526 675 531Q603 532 529 539Q455 546 383 546Q349 546 307 542Q265 537 221 527Q177 517 139 498Q101 480 74 453Q47 426 39 388Q38 384 38 381Q37 378 37 375Q37 356 48 343Q60 330 75 322Q90 313 98 306Q105 302 105 298Q105 294 100 293Q96 292 90 294ZM189 -27Q186 -27 177 -25Q168 -23 160 -20Q152 -17 151 -13Q148 6 160 42Q173 77 194 120Q214 163 236 206Q259 249 278 284Q297 318 306 336Q314 353 314 364Q314 369 314 372Q313 374 312 376Q314 388 327 408Q340 428 359 448Q378 468 400 482Q421 495 441 495Q447 495 462 490Q477 486 489 476Q501 466 499 450Q492 455 487 455Q464 455 437 433Q410 411 382 374Q353 337 326 293Q298 249 274 204Q250 160 232 122Q214 85 204 62Q200 52 198 44Q196 36 196 31Q196 17 206 17Q213 17 221 22Q229 28 236 36Q247 49 256 60Q265 72 272 70Q273 69 273 67Q273 61 267 53Q261 45 260 44Q252 34 240 17Q229 0 216 -14Q203 -27 189 -27Z';
 
 export function GET() {
-  const font = fontStack('heading').replaceAll('"', "'");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TA">
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tung Anh Tran">
 <circle cx="32" cy="32" r="32" fill="${color('deep')}"/>
-<circle cx="32" cy="32" r="28" fill="none" stroke="${color('glint')}" stroke-width="1.2"/>
-<text x="32" y="42" font-family="${font}" font-size="28" fill="${color('on-deep')}" text-anchor="middle">TA</text>
+<path transform="translate(12.6 42.9) scale(0.05 -0.05)" d="${T}" fill="${color('on-deep')}" stroke="${color('on-deep')}" stroke-width="30" stroke-linejoin="round"/>
+<path d="M14 50 C 26 47, 40 47, 52 45" fill="none" stroke="${color('glint')}" stroke-width="3" stroke-linecap="round"/>
 </svg>
 `;
   return new Response(svg, { headers: { 'Content-Type': 'image/svg+xml' } });

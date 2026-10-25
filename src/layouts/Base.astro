@@ -1,5 +1,5 @@
 ---
-import Seal from '../components/Seal.astro';
+import Signature from '../components/Signature.astro';
 import { AUTHOR, CHANNELS, NAV, TAGLINE } from '../data/site';
 import { preloadFonts, tokenCss } from '../lib/tokens';
 import '../styles/site.css';
@@ -37,6 +37,12 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
           document.documentElement.dataset.theme = 'dark';
         }
       } catch {}
+      try {
+        if (!sessionStorage.getItem('signed')) {
+          document.documentElement.classList.add('sig-write');
+          sessionStorage.setItem('signed', '1');
+        }
+      } catch {}
     </script>
     <slot name="head" />
   </head>
@@ -45,8 +51,7 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
     <header class:list={['site-header', { 'site-header--deep': deep }]}>
       <div class="wrap bar">
         <a class="brand" href="/" aria-label={`${AUTHOR}, home`}>
-          <Seal size={34} />
-          <span class="brand-name">{AUTHOR}</span>
+          <Signature swash write />
         </a>
         <nav class="nav" id="site-nav" aria-label="Main">
           <ul>
@@ -89,8 +94,7 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
     <footer class="site-footer">
       <div class="wrap footer-grid">
         <div class="footer-mark">
-          <Seal size={72} />
-          <p class="footer-name">{AUTHOR}</p>
+          <p class="footer-brand"><Signature swash /></p>
           <p class="footer-tagline">{TAGLINE.replaceAll(' · ', ', ')}</p>
         </div>
         <nav aria-label="Footer">
@@ -105,7 +109,7 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
               <a href={github.href}>GitHub</a>
             </p>
           )}
-          <p>Set in Libre Bodoni and Jost.</p>
+          <p>Set in Libre Bodoni and Jost, signed in Allura.</p>
           <p>© {year} {AUTHOR}</p>
         </div>
       </div>

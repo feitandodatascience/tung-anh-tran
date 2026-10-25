@@ -6,3 +6,4 @@ Fontsource, latin subset).
 - **Libre Bodoni** (variable, upright and italic) by Pablo Impallari and Rodrigo Fuenzalida.
 - **Jost** (variable, upright and italic) by Owen Earl (indestructible type*).
 - **JetBrains Mono** (Regular) by JetBrains.
+- **Allura** (Regular) by TypeSETit, Robert Leuschke.

@@ -46,10 +46,11 @@ const FONT_FILES: Record<string, { file: string; style: 'normal' | 'italic' }[]>
     { file: '/fonts/Jost-Variable-Italic.woff2', style: 'italic' },
   ],
   mono: [{ file: '/fonts/JetBrainsMono-Regular.woff2', style: 'normal' }],
+  script: [{ file: '/fonts/Allura-Regular.woff2', style: 'normal' }],
 };
 
-/** Files worth preloading: the upright display and text faces seen above the fold. */
-export const preloadFonts = [FONT_FILES.heading[0].file, FONT_FILES.body[0].file];
+/** Files worth preloading: the faces seen above the fold, the header's script name included. */
+export const preloadFonts = [FONT_FILES.heading[0].file, FONT_FILES.body[0].file, FONT_FILES.script[0].file];
 
 function fontFaces(): string {
   return Object.entries(FONT_FILES)
@@ -74,6 +75,7 @@ ${scale()}
 --sans: ${fontStack('body')};
 --heading: ${fontStack('heading')};
 --mono: ${'mono' in fonts ? fontStack('mono') : 'monospace'};
+--script: ${fontStack('script')};
 color-scheme: light;
 }
 :root[data-theme="dark"] {
