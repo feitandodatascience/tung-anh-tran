@@ -32,6 +32,15 @@
       "title": "À volume annuel de travail égal, le salaire net moyen de la fonction publique est inférieur de 3,7 % à celui du secteur privé",
       "type": "publication",
       "url": "https://www.insee.fr/fr/statistiques/8386049"
+    },
+    {
+      "date": "2026-10-17",
+      "id": "reading-tracker",
+      "page": "writeups/reading-tracker.page.json",
+      "path": "projects/reading-tracker.md",
+      "title": "Reading Tracker: private session logger and public reading dashboard",
+      "type": "project",
+      "writeup": "writeups/reading-tracker.md"
     }
   ]
 }
