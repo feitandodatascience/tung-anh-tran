@@ -1,7 +1,7 @@
 {
   "email": "dinhtunganh.tran@gmail.com",
   "linkedin": "https://www.linkedin.com/in/dinh-tung-anh-tran/",
-  "updated": "2026-07-29",
+  "updated": "2026-10-27",
   "sections": [
     {
       "title": "Summary",
@@ -29,7 +29,7 @@
         },
         {
           "label": "Statistical & ML Methods",
-          "text": "Regression modeling, causal inference (Oaxaca–Blinder), classification, time-series forecasting, feature engineering, model evaluation, optimisation."
+          "text": "Regression modelling, causal inference (Oaxaca–Blinder), classification, time-series forecasting, feature engineering, model evaluation, optimisation."
         },
         {
           "label": "Deep Learning",
@@ -45,7 +45,7 @@
         },
         {
           "label": "Data Visualisation & BI",
-          "text": "RMarkdown, Power BI (DAX, Power Query), Tableau."
+          "text": "R Markdown, Power BI (DAX, Power Query), Tableau."
         }
       ],
       "entries": []
@@ -63,7 +63,7 @@
           ],
           "dates": "2025 - 2026",
           "lines": [
-            "Responsible for integrated AMS dashboard development and data workflow optimization."
+            "Responsible for integrated antimicrobial stewardship (AMS) dashboard development and data workflow optimisation."
           ],
           "points": [
             {
@@ -84,7 +84,7 @@
           ],
           "points": [
             {
-              "label": "Statistical Modeling and Data Analysis",
+              "label": "Statistical Modelling and Data Analysis",
               "text": "Produced and published an official national analysis of public–private wage differentials in France using Oaxaca–Blinder regression on a 40M-record annual salary database, quantifying structural and unexplained components of wage gaps."
             },
             {
@@ -97,7 +97,7 @@
             },
             {
               "label": "Reporting",
-              "text": "Analyzed wage dynamics during the COVID-19 period, identifying structural shifts through longitudinal data analysis. Redesigned and presented annual reports on key French wage statistics using RMarkdown."
+              "text": "Analysed wage dynamics during the COVID-19 period, identifying structural shifts through longitudinal data analysis. Redesigned and presented annual reports on key French wage statistics using R Markdown."
             }
           ]
         }
@@ -115,9 +115,9 @@
           ],
           "dates": "2023",
           "lines": [
-            "Majors: Applied Data science in business",
+            "Major: Applied Data Science in Business",
             "Graduated as Valedictorian | GPA: 15.68 / 20",
-            "Thesis: Public and Private sector Pay gap in France - Statistical modeling of large administrative datasets | Grade: 17/20"
+            "Thesis: Public and private sector pay gap in France: statistical modelling of large administrative datasets | Grade: 17/20"
           ],
           "points": []
         },
@@ -128,8 +128,8 @@
           ],
           "dates": "2021",
           "lines": [
-            "Majors: Economics",
-            "Graduated with honor | GPA: 14.93 / 20"
+            "Major: Economics",
+            "Graduated with honours | GPA: 14.93 / 20"
           ],
           "points": []
         }
@@ -179,7 +179,7 @@
           ]
         },
         {
-          "title": "PREDICTIVE CUSTOMER MODELING",
+          "title": "PREDICTIVE CUSTOMER MODELLING",
           "org": [
             "Personal Project"
           ],
@@ -204,7 +204,7 @@
           "org": [
             "Microsoft DP-100"
           ],
-          "dates": "2024",
+          "dates": "2024 - 2027",
           "lines": [
             "Design, create, manage Azure ML projects; train, monitor, hyper-tune, deploy ML models to batch and online endpoints."
           ],
@@ -215,7 +215,7 @@
           "org": [
             "Microsoft PL-300"
           ],
-          "dates": "2020",
+          "dates": "2020 - 2027",
           "lines": [
             "Transform, load data in Power BI; create semantic models and DAX measures; build custom dashboards and reports."
           ],
@@ -233,7 +233,7 @@
         },
         {
           "label": "English",
-          "text": "Fluent (TOEIC 965/990 – C1 level, expired 2024)"
+          "text": "Fluent (C1, TOEIC 965/990, 2022)"
         },
         {
           "label": "French",
