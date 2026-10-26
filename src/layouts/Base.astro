@@ -16,6 +16,7 @@ const year = new Date().getFullYear();
 const here = Astro.url.pathname;
 const nav = NAV.map((item) => ({ ...item, current: here.startsWith(item.href) }));
 const github = CHANNELS.find((c) => c.label === 'GitHub');
+const canonical = new URL(here, Astro.site);
 ---
 
 <!doctype html>
@@ -28,6 +29,8 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {preloadFonts.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
     <style is:global set:html={tokenCss}></style>
@@ -95,7 +98,7 @@ const github = CHANNELS.find((c) => c.label === 'GitHub');
       <div class="wrap footer-grid">
         <div class="footer-mark">
           <p class="footer-brand"><Signature swash /></p>
-          <p class="footer-tagline">{TAGLINE.replaceAll(' · ', ', ')}</p>
+          <p class="footer-tagline">{TAGLINE}</p>
         </div>
         <nav aria-label="Footer">
           <ul class="footer-links">

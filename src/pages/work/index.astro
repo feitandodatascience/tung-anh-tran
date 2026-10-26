@@ -13,7 +13,23 @@ const certificates = cvSection('certification')?.entries;
 const pdfHref = data && `/${data.pdf}`;
 
 const years = (dates: string) => dates.replace(/\s+[-–]\s+/, ' to ');
-const caps = (title: string) => title === title.toUpperCase();
+// The CV sets titles in capitals for print; on the site they read in title case.
+const SMALL = new Set(['and', 'in', 'of', 'for', 'the', 'to']);
+const ACRONYMS = new Set(['AI', 'BI', 'ML', 'SQL']);
+const titled = (title: string) =>
+  title !== title.toUpperCase()
+    ? title
+    : title
+        .split(' ')
+        .map((word, i) => {
+          if (ACRONYMS.has(word)) return word;
+          const lower = word.toLowerCase();
+          return i > 0 && SMALL.has(lower) ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join(' ');
+// The CV gives countries as ISO codes.
+const COUNTRIES: Record<string, string> = { VN: 'Vietnam', FR: 'France' };
+const place = (org: string[]) => org.map((part) => COUNTRIES[part] ?? part).join(', ');
 const month = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
     month: 'long',
@@ -41,10 +57,8 @@ const month = (iso: string) =>
               ? roles.map((role) => (
                   <li class="role">
                     <p class="role-years">{years(role.dates)}</p>
-                    <h3 class:list={['role-title', { 'role-title--caps': caps(role.title) }]}>
-                      {role.title}
-                    </h3>
-                    <p class="role-org">{role.org.join(', ')}</p>
+                    <h3 class="role-title">{titled(role.title)}</h3>
+                    <p class="role-org">{place(role.org)}</p>
                     {role.lines.map((line) => (
                       <p class="prose">{line}</p>
                     ))}
@@ -91,12 +105,10 @@ const month = (iso: string) =>
               {study.map((item) => (
                 <li class="entry">
                   <div class="entry-head">
-                    <h3 class:list={['entry-title', { 'entry-title--caps': caps(item.title) }]}>
-                      {item.title}
-                    </h3>
+                    <h3 class="entry-title">{titled(item.title)}</h3>
                     <span class="entry-years">{years(item.dates)}</span>
                   </div>
-                  {item.org.length > 0 && <p class="entry-org">{item.org.join(', ')}</p>}
+                  {item.org.length > 0 && <p class="entry-org">{place(item.org)}</p>}
                   {item.lines.map((line) => (
                     <p class="entry-line">{line}</p>
                   ))}
@@ -128,12 +140,10 @@ const month = (iso: string) =>
               {certificates.map((item) => (
                 <li class="entry">
                   <div class="entry-head">
-                    <h3 class:list={['entry-title', { 'entry-title--caps': caps(item.title) }]}>
-                      {item.title}
-                    </h3>
+                    <h3 class="entry-title">{titled(item.title)}</h3>
                     <span class="entry-years">{years(item.dates)}</span>
                   </div>
-                  {item.org.length > 0 && <p class="entry-org">{item.org.join(', ')}</p>}
+                  {item.org.length > 0 && <p class="entry-org">{place(item.org)}</p>}
                   {item.lines.map((line) => (
                     <p class="entry-line">{line}</p>
                   ))}
