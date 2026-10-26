@@ -6,8 +6,6 @@ import {
   FEATURED_PROJECT,
   POSITIONING,
   POST_PLACEHOLDERS,
-  PROJECT_PLACEHOLDERS,
-  TAGLINE,
 } from '../data/site';
 import { href, note, plainSummary, postPages, projectPages, publications } from '../lib/content';
 import { findings, monthYear } from '../lib/format';
@@ -16,13 +14,16 @@ const work = projectPages();
 const [latest] = work;
 const featured = work.find(({ entry }) => entry.id === FEATURED_PROJECT) ?? latest;
 const more = work.filter((item) => item !== featured).slice(0, 2);
-const projectSlots = PROJECT_PLACEHOLDERS.slice(0, Math.max(0, 2 - more.length));
 const [paper] = publications();
 const posts = postPages().slice(0, 3);
 const postSlots = POST_PLACEHOLDERS.slice(0, Math.max(0, 3 - posts.length));
 ---
 
-<Base title="Tung Anh Tran, data scientist" description={TAGLINE} deep>
+<Base
+  title="Tung Anh Tran, data scientist"
+  description="Tung Anh Tran, data scientist: statistical models, pipelines and dashboards for INSEE and OUCRU, plus machine learning and computer vision competitions."
+  deep
+>
   <section class="hero" aria-labelledby="hero-name">
     <LossLandscape class="hero-art" />
     <div class="wrap hero-inner">
@@ -33,7 +34,7 @@ const postSlots = POST_PLACEHOLDERS.slice(0, Math.max(0, 3 - posts.length));
       <div class="hero-copy">
         <p class="hero-role">Data scientist</p>
         <p class="hero-lede">
-          Machine learning models for classification and computer vision, on large and
+          Machine learning models for classification and computer vision on large and
           complex datasets.
         </p>
         <p class="actions">
@@ -113,17 +114,6 @@ const postSlots = POST_PLACEHOLDERS.slice(0, Math.max(0, 3 - posts.length));
                   <a href={href(entry)}>{page.title}</a>
                 </h3>
                 <p class="row-text" set:html={plainSummary(page.summary_html)} />
-              </li>
-            ))
-          }
-          {
-            projectSlots.map((slot) => (
-              <li class="row row--placeholder">
-                <p class="kind">
-                  {slot.kind} <Placeholder />
-                </p>
-                <h3 class="row-title">{slot.title}</h3>
-                <p class="row-text">{slot.summary}</p>
               </li>
             ))
           }

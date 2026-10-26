@@ -181,18 +181,6 @@ export function note(entry: Entry): Note {
   } as Note;
 }
 
-/** Tools and methods named across every exported note, in first-seen order. */
-export function toolkit(): { tools: string[]; skills: string[] } {
-  const tools = new Set<string>();
-  const skills = new Set<string>();
-  for (const entry of entries()) {
-    const meta = note(entry);
-    meta.tools.forEach((t) => tools.add(t));
-    meta.skills.forEach((s) => skills.add(s));
-  }
-  return { tools: [...tools], skills: [...skills] };
-}
-
 /** Every publication with its citation, newest first. */
 export function publications(): (Entry & { publication: Citation })[] {
   return entries()

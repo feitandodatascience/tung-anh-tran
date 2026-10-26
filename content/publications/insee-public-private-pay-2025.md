@@ -32,7 +32,7 @@ publication:
 metrics:
 - name: Salary income gap, civil service vs private sector
   value: 9.3%
-  context: Mean annual salary income in 2021, 24,070 euros for employees working mainly in the civil service vs 22,040 euros in the private sector. France excluding Mayotte, all employees except apprentices, interns, elected officials, agriculture and household employers. Insee, panel Tous salariés. Insee Première n° 2043, March 2025.
+  context: Mean annual salary income in 2021, 24,070 euros for employees working mainly in the civil service vs 22,040 euros in the private sector. France excluding Mayotte, all employees except apprentices, interns, elected officials, agriculture and household employers. Insee, panel Tous salariés. Insee Première no. 2043, March 2025.
 - name: Net salary gap in full-time equivalent, civil service vs private sector
   value: -3.7%
   context: Mean annual net salary in full-time equivalent (EQTP), 2021, civil service relative to the private sector. Same field and source as above.

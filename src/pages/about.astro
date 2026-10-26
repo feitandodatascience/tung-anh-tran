@@ -2,12 +2,11 @@
 import HexPortrait from '../components/HexPortrait.astro';
 import Placeholder from '../components/Placeholder.astro';
 import Base from '../layouts/Base.astro';
-import { LANGUAGES, POSITIONING, TAGLINE } from '../data/site';
-import { cvSection, href, projectPages, toolkit } from '../lib/content';
+import { LANGUAGES, STACK } from '../data/site';
+import { cvSection, href, projectPages, publications } from '../lib/content';
 
-const { tools, skills } = toolkit();
 const languages = cvSection('language')?.items;
-const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const insee = publications().find(({ publication }) => publication.issue === '2043');
 
 // Lessons the approved DaT write-up records, restated as working habits.
 const dat = projectPages().find(({ entry }) => entry.id === 'drivendata-dat-parkinsons-challenge');
@@ -27,11 +26,17 @@ const principles = [
 ];
 ---
 
-<Base title="About · Tung Anh Tran" description={TAGLINE}>
+<Base
+  title="About · Tung Anh Tran"
+  description="Tung Anh Tran trained in France, co-authored an official INSEE study of 40 million salary records and built a hospital antimicrobial stewardship dashboard."
+>
   <header class="wrap page-head about-head">
     <div>
       <h1 class="page-title">About</h1>
-      <p class="page-lede">{POSITIONING}</p>
+      <p class="page-lede">
+        I'm Tung Anh Tran, a data scientist. I have worked on France's national statistics
+        and on clinical research data from hospitals in Vietnam.
+      </p>
     </div>
     <HexPortrait />
   </header>
@@ -40,15 +45,20 @@ const principles = [
     <section class="ledger" aria-labelledby="story">
       <h2 class="ledger-label" id="story">Background</h2>
       <div class="ledger-body">
-        <div class="prose prose--placeholder">
-          <p><Placeholder /></p>
+        <div class="prose">
           <p>
-            Two or three sentences on where I trained, the teams I have worked in and the
-            kind of data I have spent most time with.
+            I trained in France, graduating top of my cohort in data science at Paris 1
+            Panthéon-Sorbonne. At INSEE, the national statistics institute, I measured the
+            public–private pay gap with Oaxaca–Blinder decompositions on a 40-million-record
+            salary database. The work was published as {
+              insee?.url ? <a href={insee.url}>Insee Première no. 2043</a> : 'Insee Première no. 2043'
+            }, co-written with my former manager, Fanny Godet.
           </p>
           <p>
-            One or two sentences on what I am looking for next, and the problems I would
-            most like to work on.
+            At the Oxford University Clinical Research Unit in Vietnam, the data moved from
+            salaries to hospital wards. I built the data platform behind a 30-page
+            antimicrobial stewardship dashboard, bringing four independently developed
+            components into one reporting system, ready to deploy across hospital sites.
           </p>
         </div>
       </div>
@@ -80,16 +90,20 @@ const principles = [
     </section>
 
     <section class="ledger" aria-labelledby="kit">
-      <h2 class="ledger-label" id="kit">Toolkit</h2>
+      <h2 class="ledger-label" id="kit">My stack</h2>
       <div class="ledger-body toolkit">
-        <div>
-          <h3>Methods</h3>
-          <ul>{skills.map((s) => <li>{capital(s)}</li>)}</ul>
-        </div>
-        <div>
-          <h3>Tools</h3>
-          <ul>{tools.map((t) => <li>{t}</li>)}</ul>
-        </div>
+        {
+          STACK.map(({ group, items }) => (
+            <div>
+              <h3>{group}</h3>
+              <ul>
+                {items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </div>
     </section>
 
@@ -99,7 +113,7 @@ const principles = [
         <dl class="facts">
           <div>
             <dt>Based in</dt>
-            <dd>City, country <Placeholder /></dd>
+            <dd>Hanoi, Vietnam</dd>
           </div>
           {
             languages

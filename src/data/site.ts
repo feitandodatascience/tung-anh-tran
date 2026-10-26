@@ -5,15 +5,15 @@
 
 export const AUTHOR = 'Tung Anh Tran';
 
-/** Long form of the positioning statement (brand-voice skill). */
+/** Long form of the positioning statement, the home page's "In short". */
 export const POSITIONING =
-  "I'm Tung Anh Tran, a data scientist building machine learning models for " +
-  'classification and computer vision on large, complex datasets. Most of my work is ' +
-  "in healthcare and education, and I'm open to problems in other industries.";
+  "I'm a data scientist who has built statistical and machine learning models, data " +
+  'pipelines and integrated dashboards on large, complex databases. Alongside my work, I ' +
+  'take part in machine learning competitions and build side projects, like the website ' +
+  "you're reading now.";
 
-/** Short form, for meta descriptions and the footer. */
-export const TAGLINE =
-  'Data scientist · ML classification and computer vision · healthcare and education';
+/** Short form, for the footer. */
+export const TAGLINE = 'Data scientist, curious about any dataset with a pattern behind it.';
 
 export const NAV = [
   { href: '/about/', label: 'About' },
@@ -44,8 +44,47 @@ export const CHANNELS: Channel[] = [
 /** Roles and domains from the brand-voice skill. */
 export const OPEN_TO = {
   roles: ['Data Scientist', 'ML Engineer', 'Data Analyst'],
-  domains: 'Healthcare and education first, other industries welcome.',
+  domains: "Have a data problem that needs solving? I'd like to hear about it, whatever the field.",
 };
+
+/** The About page's "My stack", most in demand first. */
+export const STACK = [
+  { group: 'Languages', items: ['Python (pandas, NumPy)', 'SQL', 'R (tidyverse)', 'PySpark'] },
+  {
+    group: 'Machine learning',
+    items: [
+      'PyTorch',
+      'scikit-learn',
+      'XGBoost and LightGBM',
+      'Computer vision (CNNs)',
+      'Time-series forecasting',
+      'Feature engineering',
+      'Ensembles and stacking',
+      'Hyperparameter tuning (Optuna)',
+    ],
+  },
+  {
+    group: 'Statistics',
+    items: [
+      'Regression modelling',
+      'Causal inference',
+      'Probability calibration',
+      'Cross-validation design',
+    ],
+  },
+  {
+    group: 'Engineering and cloud',
+    items: [
+      'Azure Machine Learning',
+      'Microsoft Fabric',
+      'ETL pipelines',
+      'Docker',
+      'Git and GitHub Actions',
+      'pytest',
+    ],
+  },
+  { group: 'Dashboards', items: ['Power BI (DAX)', 'Tableau', 'Streamlit'] },
+];
 
 export interface Role {
   title: string;
@@ -119,31 +158,6 @@ export const DEMO_POSTERS: Record<string, Poster> = {
   'reading-tracker': { src: '/demos/reading-tracker.webp', width: 1568, height: 726 },
 };
 
-export interface Teaser {
-  title: string;
-  summary: string;
-  kind: string;
-  tags: string[];
-  placeholder: true;
-}
-
-export const PROJECT_PLACEHOLDERS: Teaser[] = [
-  {
-    title: 'Project title',
-    summary: 'One line that leads with the model and its validated result.',
-    kind: 'Project',
-    tags: ['tag', 'tag'],
-    placeholder: true,
-  },
-  {
-    title: 'Project title',
-    summary: 'One line that leads with the model and its validated result.',
-    kind: 'Competition',
-    tags: ['tag', 'tag'],
-    placeholder: true,
-  },
-];
-
 export interface PostTeaser {
   title: string;
   summary: string;
@@ -165,13 +179,6 @@ export const POST_PLACEHOLDERS: PostTeaser[] = [
     summary: 'What a steady gap between public and private scores does and does not say.',
     month: 'Coming soon',
     minutes: 5,
-    placeholder: true,
-  },
-  {
-    title: 'Post title',
-    summary: 'One line on what the reader learns.',
-    month: 'Coming soon',
-    minutes: 4,
     placeholder: true,
   },
 ];
